@@ -1,2 +1,3 @@
 const users = require("./userRoutes");
-module.exports = [users];
+const configs = require("./configRoutes");
+module.exports = [users, configs];

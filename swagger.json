@@ -22,6 +22,10 @@
     {
       "name": "Users",
       "description": "Users related api"
+    },
+    {
+      "name": "Configs",
+      "description": "Configs related api"
     }
   ],
   "securityDefinitions": {
@@ -311,6 +315,195 @@
           }
         }
       }
+    },
+    "/config": {
+      "post": {
+        "tags": ["Configs"],
+        "summary": "Create a new config",
+        "description": "Create a new config (Admin/ClassAdmin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "config",
+            "description": "Config information",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Config"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Config created successfully"
+          }
+        }
+      }
+    },
+    "/configs": {
+      "get": {
+        "tags": ["Configs"],
+        "summary": "Get all configs",
+        "description": "Get all configs (Admin/ClassAdmin only)",
+        "produces": ["application/json"],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of configs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Config"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/configs/{id}": {
+      "get": {
+        "tags": ["Configs"],
+        "summary": "Get config by ID",
+        "description": "Get a single config by ID (Admin/ClassAdmin only)",
+        "produces": ["application/json"],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Config ID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Config found",
+            "schema": {
+              "$ref": "#/definitions/Config"
+            }
+          },
+          "404": {
+            "description": "Config not found"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Configs"], 
+        "summary": "Update config",
+        "description": "Update a config by ID (Admin/ClassAdmin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Config ID",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "config",
+            "description": "Updated config information",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Config"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Config updated successfully",
+            "schema": {
+              "$ref": "#/definitions/Config"
+            }
+          },
+          "404": {
+            "description": "Config not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Configs"],
+        "summary": "Delete config",
+        "description": "Delete a config by ID (Admin/ClassAdmin only)", 
+        "produces": ["application/json"],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Config ID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Config deleted successfully"
+          },
+          "404": {
+            "description": "Config not found"
+          }
+        }
+      }
+    },
+    "/configs/slug/{slug}": {
+      "get": {
+        "tags": ["Configs"],
+        "summary": "Get config by slug",
+        "description": "Get a single config by slug (Admin/ClassAdmin only)",
+        "produces": ["application/json"],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "description": "Config slug",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Config found",
+            "schema": {
+              "$ref": "#/definitions/Config"
+            }
+          },
+          "404": {
+            "description": "Config not found"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -569,6 +762,23 @@
         "motherName": {
           "type": "string",
           "example": "Jane Doe"
+        }
+      }
+    },
+    "Config": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string",
+          "example": "Class"
+        },
+        "key": {
+          "type": "string",
+          "example": "Class-10"
+        },
+        "value": { 
+          "type": "string",
+          "example": "10"
         }
       }
     }

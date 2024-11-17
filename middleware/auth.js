@@ -31,7 +31,7 @@ const protect = asyncHandler(async (req, res, next) => {
 });
 
 const IsSupperadminOrClassadmin = (req, res, next) => {
-  console.log(req.user);
+  // console.log(req.user);
   if (req.user && req.user.userType === "superadmin" || req.user.userType === "classadmin") {
     next();
   } else {
