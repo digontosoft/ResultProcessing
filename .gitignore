@@ -1,5 +1,6 @@
 # Dependency directories
 node_modules/
+*.md
 
 # Environment configuration files
 .env
