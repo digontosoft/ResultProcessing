@@ -16,6 +16,7 @@ const Login = asyncHandler(async (req, res) => {
 			_id: user._id,
 			email: user.email,
 			userType: user.userType,
+			name: `${user?.firstName} ${user?.lastName}`,
 			token: generateToken(user._id),
 		});
 	} else {
