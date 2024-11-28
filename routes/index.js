@@ -1,3 +1,5 @@
 const users = require("./userRoutes");
 const configs = require("./configRoutes");
-module.exports = [users, configs];
+const resultRoutes = require("./result.Routes");
+
+module.exports = [users, configs, resultRoutes];

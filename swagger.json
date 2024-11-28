@@ -505,6 +505,139 @@
         }
       }
     }
+    ,
+    "/result/create": {
+      "post": {
+        "tags": ["Results"],
+        "summary": "Create a new result",
+        "description": "Create a new result record",
+        "produces": ["application/json"],
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Result object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "studentId": {
+                  "type": "number",
+                  "example": 12345
+                },
+                "session": {
+                  "type": "string", 
+                  "example": "2023-2024"
+                },
+                "term": {
+                  "type": "string",
+                  "example": "Fall"
+                },
+                "subject": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "subjectID": {
+                        "type": "string",
+                        "example": "MATH101"
+                      },
+                      "subjective": {
+                        "type": "number",
+                        "example": 85
+                      },
+                      "objective": {
+                        "type": "number",
+                        "example": 90
+                      },
+                      "practical": {
+                        "type": "number",
+                        "example": 95
+                      },
+                      "totalMarks": {
+                        "type": "number",
+                        "example": 270
+                      }
+                    }
+                  }
+                },
+                "totalMarks": {
+                  "type": "number",
+                  "example": 270
+                },
+                "grade": {
+                  "type": "string",
+                  "example": "A+"
+                },
+                "remarks": {
+                  "type": "string",
+                  "example": "Excellent performance"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Result created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "60d5ecb74d5c3d1b5c5c5c5c"
+                },
+                "studentId": {
+                  "type": "number",
+                  "example": 12345
+                },
+                "session": {
+                  "type": "string",
+                  "example": "2023-2024"
+                },
+                "term": {
+                  "type": "string",
+                  "example": "Fall"
+                },
+                "subject": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "example": {
+                      "subjectID": "MATH101",
+                      "subjective": 85,
+                      "objective": 90,
+                      "practical": 95,
+                      "totalMarks": 270
+                    }
+                  }
+                },
+                "totalMarks": {
+                  "type": "number",
+                  "example": 270
+                },
+                "grade": {
+                  "type": "string",
+                  "example": "A+"
+                },
+                "remarks": {
+                  "type": "string",
+                  "example": "Excellent performance"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "example": "2023-09-20T12:00:00.000Z"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    }
   },
   "definitions": {
     "register": {
@@ -560,7 +693,7 @@
       "properties": {
         "email": {
           "type": "string",
-          "example": "john@example.com"
+          "example": "classadmin@example.com"
         },
         "password": {
           "type": "string",
