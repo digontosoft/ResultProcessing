@@ -1,27 +1,51 @@
 const mongoose = require("mongoose");
 
 const resultSchema = new mongoose.Schema({
+   session: {
+      type: String,
+     },
+     term: {
+      type: String,
+     },
+     className: {
+      type: String,
+     },
+     section: {
+      type: String,
+     },
+     shift: {
+      type: String,
+     },
    studentId: { 
     type: Number,
    },
-   session: {
+   rollNo: {
+    type: Number,
+   },
+   subjectName: {
     type: String,
    },
-   term: {
+   subjective: {
+    type: Number,
+   },
+   objective: {
+    type: Number,
+   },
+   classAssesment: {
+    type: Number,
+   },
+   practical: {
+    type: Number,
+   },
+   totalMarks: {
+    type: Number,
+   },
+   grade: {
     type: String,
    },
-   subject:[
-    {
-        subjectID: String,
-        subjective: Number,
-        objective: Number,
-        practical: Number,
-        totalMarks: Number
-    }
-   ],
-   totalMarks: Number,
-   grade: String,
-   remarks: String,
+   remarks: {
+    type: String,
+   },
    createdAt: {
     type: Date,
     default: Date.now,
