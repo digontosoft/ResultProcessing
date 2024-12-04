@@ -637,6 +637,33 @@
           }
         }
       }
+    },
+    "/result/individual": {
+      "post": {
+        "tags": ["Results"],
+        "summary": "Get individual result",
+        "description": "Get individual result",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Result object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/IndividualResult"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Result fetched successfully",
+            "schema": {
+              "$ref": "#/definitions/IndividualResult"
+            }
+          }
+        } 
+      }
     }
   },
   "definitions": {
@@ -912,6 +939,35 @@
         "value": { 
           "type": "string",
           "example": "10"
+        }
+      }
+    },
+    "IndividualResult": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "type": "string",
+          "example": "A"
+        },
+        "className": {
+          "type": "string",
+          "example": "9"
+        },
+        "shift": {
+          "type": "string",
+          "example": "morning"
+        },
+        "session": {
+          "type": "string",
+          "example": "2024"
+        },
+        "term": {
+          "type": "string",
+          "example": "Final"
+        },
+        "studentId": {
+          "type": "string",
+          "example": "1"
         }
       }
     }
