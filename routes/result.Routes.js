@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const { createResult, bulkUploadResults } = require("../controllers/resultController");
+const { createResult, bulkUploadResults, getIndividualResult } = require("../controllers/resultController");
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -31,6 +31,6 @@ const upload = multer({
 router.post("/result/create", createResult);
 //want to make a route for bulk upload of results
 router.post("/result/bulk-upload", upload.single('file'), bulkUploadResults);
-
+router.post("/result/individual", getIndividualResult);
 
 module.exports = router;

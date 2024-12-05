@@ -31,7 +31,7 @@ const resultSchema = new mongoose.Schema({
    objective: {
     type: Number,
    },
-   classAssesment: {
+   classAssignment: {
     type: Number,
    },
    practical: {
