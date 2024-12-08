@@ -78,10 +78,61 @@ const deleteStudent = asyncHandler(async (req, res) => {
 	}
 });
 
+//bulk student upload
+const bulkUploadStudents = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+        
+        const XLSX = require('xlsx');
+        const workbook = XLSX.readFile(req.file.path);
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(worksheet);
+
+        const students = [];
+        for (const row of data) {
+            const student = await Student.create({
+                studentId: row.studentId,
+                studentName: row.studentName,
+                fatherName: row.fatherName,
+                gender: row.gender,
+                religion: row.religion,
+                roll: row.roll,
+                section: row.section,
+                shift: row.shift,
+                group: row.group,
+                year: row.year,
+                mobile: row.mobile,
+         
+            });
+            students.push(student);
+        }
+
+        // Optional: Remove the temporary file
+        const fs = require('fs');
+        fs.unlinkSync(req.file.path);
+        
+        res.status(200).json({ 
+            message: "Student uploaded successfully", 
+            count: students.length,
+            students 
+        });
+    } catch (error) {
+        // If file exists, remove it in case of error
+        if (req.file) {
+            const fs = require('fs');
+            fs.unlinkSync(req.file.path);
+        }
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
 	addStudentData,
     getAllStudent,
     getStudentById,
     updateStudent,
-    deleteStudent
+    deleteStudent,
+    bulkUploadStudents
 };
