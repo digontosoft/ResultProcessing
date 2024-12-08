@@ -3,14 +3,29 @@ const Student = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 
 const createResult = asyncHandler(async (req, res) => {
-  const { studentId, session, term, className, section, shift, subjectName, subjective, objective } = req.body;
+  const { studentId, session, term, className, section, shift, subjectName, subjective, objective ,
+    classAssignment,practical
+  } = req.body;
   try {
-    const result = await Result.create({ studentId, session, term, className, section, shift, subjectName, subjective, objective });
+    const result = await Result.create({ studentId, session, term, className, section, shift, subjectName, subjective, objective, classAssignment,practical });
     res.status(201).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
+const getAllResultData = asyncHandler(async(req,res)=>{
+    try {
+        const allResult = await Result.find();
+		res.json({
+			message: 'successfully get all result',
+			data: allResult,
+		});
+    } catch (error) {
+        console.log("error ", error)
+        res.status(404).json({ message: 'Result not found' });
+    }
+})
 
 const bulkUploadResults = async (req, res) => {
     try {
@@ -187,4 +202,4 @@ function calculateGrade(totalMarks){
     return "F";
 }
 
-module.exports = { createResult, bulkUploadResults, getIndividualResult };
+module.exports = { createResult, bulkUploadResults, getIndividualResult,getAllResultData };
