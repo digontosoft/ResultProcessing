@@ -670,7 +670,7 @@
         "summary": "Get all students",
         "security": [
           {
-            "bearerAuth": []
+            "Bearer": []
           }
         ],
         "description": "Retrieve a list of all students",
@@ -682,7 +682,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Student"
+                   
                   }
                 }
               }
@@ -700,7 +700,7 @@
         "summary": "Get student by ID",
         "security": [
           {
-            "bearerAuth": []
+            "Bearer": []
           }
         ],
         "parameters": [
@@ -720,7 +720,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Student"
+                 
                 }
               }
             }
@@ -736,9 +736,9 @@
       "put": {
         "tags": ["Students"],
         "summary": "Update student",
-        "security": [
+       "security": [
           {
-            "bearerAuth": []
+            "Bearer": []
           }
         ],
         "parameters": [
@@ -757,7 +757,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Student"
+               
               }
             }
           }
@@ -768,7 +768,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Student"
+                
                 }
               }
             }
@@ -784,9 +784,9 @@
       "delete": {
         "tags": ["Students"],
         "summary": "Delete student",
-        "security": [
+         "security": [
           {
-            "bearerAuth": []
+            "Bearer": []
           }
         ],
         "parameters": [

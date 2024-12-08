@@ -4,6 +4,7 @@ const Student = require('../models/studentModel');
 
 // add student data
 const addStudentData = asyncHandler(async (req, res) => {
+    console.log("api called")
 	try {
 		const studentData = await Student.create(req.body);
 		res.json({
@@ -31,6 +32,7 @@ const getAllStudent = asyncHandler(async (req, res) => {
 
 // Get single user by ID
 const getStudentById = asyncHandler(async (req, res) => {
+
 	const user = await Student.findById(req.params.id);
 	if (user) {
 		res.json(user);
@@ -69,7 +71,7 @@ const updateStudent = asyncHandler(async (req, res) => {
 const deleteStudent = asyncHandler(async (req, res) => {
 	const user = await Student.findById(req.params.id);
 	if (user) {
-		await user.deleteOne();
+		await Student.deleteOne();
 		res.json({ message: 'User deleted successfully' });
 	} else {
 		res.status(404).json({ message: 'User not found' });
