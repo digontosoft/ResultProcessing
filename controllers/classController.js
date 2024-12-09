@@ -1,4 +1,3 @@
-//write a crud api for class model
 const Class = require("../models/classModel");
 const asyncHandler = require("express-async-handler");
 
@@ -12,8 +11,8 @@ const createClass = asyncHandler(async (req, res) => {
         }
     
         // Create new config
-        const config = await Config.create({ key, value, slug });
-        res.status(201).json({ message: "Class created successfully", config });
+        const ClassData = await Class.create({ name, value });
+        res.status(201).json({ message: "Class created successfully", ClassData });
       } catch (error) {
         res.status(500).json({ message: error.message });
       }
