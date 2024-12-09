@@ -23,5 +23,4 @@ router
   .get(protect, getUserById)
   .put(protect, updateUser)
   .delete(protect, deleteUser);
-router.route("/addStudentData").post(protect, IsSupperadminOrClassadmin, addStudentData);
 module.exports = router;

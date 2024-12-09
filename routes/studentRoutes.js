@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const { createResult, bulkUploadResults, getIndividualResult, getAllResultData } = require("../controllers/resultController");
-
+const { protect, IsSupperadminOrClassadmin } = require("../middleware/auth");
+const { getAllStudent, getStudentById, updateStudent, deleteStudent, addStudentData, bulkUploadStudents } = require("../controllers/studentController");
 // Configure multer storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -27,11 +27,12 @@ const upload = multer({
     storage: storage,
     fileFilter: fileFilter
 });
-
-router.post("/result/create", createResult);
-router.get("/result/get_all", getAllResultData);
-//want to make a route for bulk upload of results
-router.post("/result/bulk-upload", upload.single('file'), bulkUploadResults);
-router.post("/result/individual", getIndividualResult);
-
+router.route("/addStudentData").post(protect, IsSupperadminOrClassadmin, addStudentData);
+router.route("/getAllStudent").get(protect,getAllStudent);
+router
+  .route("/student/:id")
+  .get(protect, getStudentById)
+  .put(protect, updateStudent)
+  .delete(protect, deleteStudent);
+  router.post("/student/bulk-upload", upload.single('file'), bulkUploadStudents);
 module.exports = router;
