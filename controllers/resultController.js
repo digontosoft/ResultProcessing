@@ -115,7 +115,6 @@ const getIndividualResult = asyncHandler(async (req, res) => {
         const { session, term, className, section, shift, studentId } = req.body;
         const results = await Result.find({ session, term, className, section, shift, studentId });
         const studentInfo = await Student.findOne({ studentId, class: className, section, shift });
-
         //subject vs full marks hash data
         const subjectVsFullMarks = {
             "Bangla1st": 100,
