@@ -1,13 +1,15 @@
-const { createClassSub, getAllClassesWithSub, getClassWithSubject, updateClassWithSubjects, deleteClassWithSubjects, deleteSubjectsFromClass } = require("../controllers/classSubController")
-
 const express = require("express");
+const {
+  createClassSub,
+  getAllClassSub,
+  classSubFindById,
+  deleteClassSub,
+} = require("../controllers/classSubController");
 const router = express.Router();
 
+// Define routes
+router.post("/class-sub", createClassSub);
+router.get("/all-class-sub", getAllClassSub);
+router.route("/class-sub/:id").get(classSubFindById).delete(deleteClassSub);
 
-router.route("/class-sub").post(createClassSub)
-router.route("/class-subjects").get(getAllClassesWithSub)
-router.route("/class-sub/:id").get(getClassWithSubject) //?class=id  query use 
-router.route("/class-sub/:id").put(updateClassWithSubjects).delete(deleteClassWithSubjects)
-router.route("/class-sub/:id/subjects").delete(deleteSubjectsFromClass)
-
-module.exports = router
+module.exports = router;

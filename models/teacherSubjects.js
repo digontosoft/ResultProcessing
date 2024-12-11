@@ -10,20 +10,20 @@ const teacherSubjectsSchema = new mongoose.Schema({
         {
             subject:{
                 type:mongoose.Schema.Types.ObjectId,
-                ref:"ClassWithSub",
+                ref:"Subject",
                 required:true
             },
             section:{
                 type:String,
                 enum:['A','B'],
-                default:null,
-                required:true
+                default:"A",
+                //required:true
             },
             shift:{
                 type:String,
                 enum:['morning','day'],
-                default:null,
-                required:true 
+                default:"morning",
+                //required:true 
             }
         }
     ]

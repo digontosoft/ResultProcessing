@@ -2,19 +2,18 @@ const express = require("express");
 const {
   createTeacherSub,
   getAllTeacherSubjects,
-  getTeacherSubjects,
+  getTeacherSubjectById,
+  deleteTeacherSubject,
   updateTeacherSubject,
-  deleteTeacherOrSubject,
 } = require("../controllers/teacherSubController");
-
 const router = express.Router();
 
 router.route("/teacher-sub").post(createTeacherSub);
-router.route("/teachers-sub").get(getAllTeacherSubjects);
-router.route("/teacher-subs/:id").get(getTeacherSubjects);
+router.route("/teacher-subs").get(getAllTeacherSubjects);
 router
   .route("/teacher-sub/:id")
-  .put(updateTeacherSubject)
-  .delete(deleteTeacherOrSubject);
+  .get(getTeacherSubjectById)
+  .delete(deleteTeacherSubject)
+  .put(updateTeacherSubject);
 
-  module.exports = router
+module.exports = router;
