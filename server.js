@@ -25,6 +25,7 @@ app.use(express.json());
 
 app.use("/api/v1", routes);
 
+
 app.get("/", function (req, res) {
   res.send("Backend is running successfully....");
 });

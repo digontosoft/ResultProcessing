@@ -3,5 +3,8 @@ const configs = require("./configRoutes");
 const resultRoutes = require("./result.Routes");
 const students = require("./studentRoutes");
 const classRoutes = require("./classRoutes");
+const classSub = require('./classSubRoutes')
+const teacherSub = require('./teacherSubRoutes')
+const subject = require("./subjectRoutes")
 
-module.exports = [users, configs, resultRoutes, students, classRoutes];
+module.exports = [users, configs, resultRoutes, students, classRoutes,classSub,teacherSub,subject];
