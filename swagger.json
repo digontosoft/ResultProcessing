@@ -1147,7 +1147,17 @@
         },
         "password": {
           "type": "string",
-          "example": "password123"
+          "example": "123456"
+        },
+        "userType": {
+          "type": "string",
+          "example": "classadmin",
+          "enum": ["superadmin", "classadmin", "student"]
+        },
+        "userStatus": {
+          "type": "string", 
+          "example": "Active",
+          "enum": ["Pending", "Active", "Deactivated"]
         },
         "phoneNumber": {
           "type": "string",
@@ -1157,8 +1167,13 @@
           "type": "string",
           "example": "123 Main St"
         },
+        "religion": {
+          "type": "string",
+          "example": "Christianity"
+        },
         "dateOfBirth": {
           "type": "string",
+          "format": "date",
           "example": "1990-01-01"
         }
       }
