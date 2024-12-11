@@ -24,6 +24,10 @@ app.use(express.static("public"));
 app.use(express.json());
 
 app.use("/api/v1", routes);
+app.use((err,req,res,next)=>{
+  console.log(err.message);
+  
+})
 
 app.get("/", function (req, res) {
   res.send("Backend is running successfully....");

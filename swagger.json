@@ -26,6 +26,10 @@
     {
       "name": "Configs",
       "description": "Configs related api"
+    },
+    {
+      "name": "ClassVsSubject",
+      "description": "Class with subject related api"
     }
   ],
   "securityDefinitions": {
@@ -1126,6 +1130,145 @@
           }
         }
       }
+    },
+    "/class-sub/create":{
+      "post":{
+        "tags":["ClassVsSubject"],
+        "summary": "Creates a new subject in class",
+        "description": "Allows an admin to create a new class and their subject with the provided information.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "classWithSubject",
+            "description": "class With Subject data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateClassSub"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Class with sun created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/class-subjects":{
+      "get":{
+        "tags":["ClassVsSubject"],
+        "summary": "Retrieves all Class with sub",
+        "description": "Gets a list of all class with sub",
+        "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "A list of class with sub"
+            }
+          }
+      }
+    },
+    "/class-subject/{id}":{
+      "get":{
+        "tags":["ClassVsSubject"],
+        "summary": "Retrieves a single class subjects",
+          "description": "Gets a single class subjects by ID.",
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "type": "string",
+              "description": "ID of the class subjects to retrieve"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Detailed information about the class subjects"
+            },
+            "404": {
+              "description": "class not found"
+            }
+          }
+      },
+      "put": {
+        "tags": ["ClassVsSubject"],
+        "summary": "Updates a single class subjects",
+        "description": "Updates the details of an existing class subjects by ID.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "description": "ID of the class subjects to update"
+          },
+          {
+            "in": "body",
+            "name": "classWithSubject",
+            "description": "class subjects data to update",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateBlog"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "class subjects updated successfully"
+          },
+          "404": {
+            "description": "class subjects not found"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["ClassVsSubject"],
+        "summary": "Deletes a single class subjects",
+        "description": "Deletes a class subjects by ID.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "description": "ID of the class subjects to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "class subjects deleted successfully"
+          },
+          "404": {
+            "description": "class subjects not found"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1438,6 +1581,18 @@
         "studentId": {
           "type": "string",
           "example": "1"
+        }
+      }
+    },
+    "CreateClassSub":{
+      "type":"object",
+      "required":["class"],
+      "properties":{
+        "class":{
+          "type":"string"
+        },
+        "subjects":{
+         "type":"string"
         }
       }
     }
