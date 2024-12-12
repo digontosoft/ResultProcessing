@@ -6,15 +6,18 @@ const {
   deleteSubject,
   updateSubject,
 } = require("../controllers/subjectController");
+const { protect, IsSupperadminOrClassadmin } = require("../middleware/auth");
 
 const router = express.Router();
 
-router.route("/create-subject").post(createSubject);
+router
+  .route("/create-subject")
+  .post(protect, IsSupperadminOrClassadmin, createSubject);
 router.route("/subjects").get(getAllSub);
 router
   .route("/subject/:id")
   .get(getSubjectById)
-  .delete(deleteSubject)
-  .put(updateSubject);
+  .delete(protect, IsSupperadminOrClassadmin, deleteSubject)
+  .put(protect, IsSupperadminOrClassadmin, updateSubject);
 
-  module.exports = router
+module.exports = router;
