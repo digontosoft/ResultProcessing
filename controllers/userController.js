@@ -75,7 +75,7 @@ const teacherReg = asyncHandler(async (req, res) => {
       position: req.body.position,
       designation: req.body.designation,
       subject: req.body.subject,
-      mobile: req.body.mobile,
+      phoneNumber: req.body.phoneNumber,
 	  userType:'teacher'
     });
     await user.save();
@@ -87,6 +87,30 @@ const teacherReg = asyncHandler(async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+const updateTeacher = asyncHandler(async(req,res)=>{
+	try {
+		const user = await User.findOne({_id:req.params.id,userType:'teacher'});
+		//console.log(user);
+		
+		user.email = req.body.email || user.email
+		user.firstName = req.body.firstName || user.firstName
+		user.lastName = req.body.lastName || user.lastName
+		user.position = req.body.position || user.position
+		user.subject = req.body.subject || user.subject
+		user.designation = req.body.designation || user.designation
+		user.phoneNumber = req.body.mobile || user.phoneNumber
+		if (req.body.password) {
+			user.password = req.body.password;
+		  }
+
+		const updateData = await user.save()
+		res.json({ message: "Teacher updated successfully",updateData });
+
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
+	}
+})
 
 // Forgot Password
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -163,7 +187,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
-    const allUsers = await User.find({ userType: { $ne: "agent" } });
+    const allUsers = await User.find({ userType: { $ne: "superadmin" } });
     res.json({
       message: "successfully registration",
       data: allUsers,
@@ -246,4 +270,5 @@ module.exports = {
   resetPassword,
   addStudentData,
   teacherReg,
+  updateTeacher
 };

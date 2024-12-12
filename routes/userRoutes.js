@@ -12,6 +12,7 @@ const {
   resetPassword,
   addStudentData,
   teacherReg,
+  updateTeacher,
 } = require("../controllers/userController");
 
 router.route("/register").post(Registration);
@@ -25,4 +26,5 @@ router
   .get(protect, getUserById)
   .put(protect, updateUser)
   .delete(protect, deleteUser);
+router.route("/teacher/:id").put(updateTeacher)
 module.exports = router;

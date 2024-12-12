@@ -69,7 +69,7 @@ const updateSubject = asyncHandler(async (req, res) => {
       res.status(404).json({ message: "Subject not found" });
       return;
     }
-    const data = await Class.findOne({ value: id });
+    const data = await Class.findOne({ $or: [{ value: id }, { name: id }] });
 
     subject.name = name || subject.name;
     subject.subjectCode = subjectCode || subject.subjectCode;

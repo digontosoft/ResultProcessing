@@ -88,9 +88,7 @@ const userSchema = new mongoose.Schema(
     subject: {
       type: String,
     },
-    mobile:{
-      type: String,
-    }
+   
   },
   { timestamps: true }
 );
