@@ -13,9 +13,8 @@ const createSubject = asyncHandler(async (req, res) => {
       });
     }
 
-    const data = await Class.findOne({ value: id });
+    const data = await Class.findOne({ $or: [{ value: id }, { name: id }] });
 
-    console.log(data);
 
     const SubData = await Subject.create({
       name,
