@@ -11,9 +11,11 @@ const {
   forgotPassword,
   resetPassword,
   addStudentData,
+  teacherReg,
 } = require("../controllers/userController");
 
 router.route("/register").post(Registration);
+router.route('/teacher-reg').post(teacherReg)
 router.route("/login").post(Login);
 router.route("/forgotPassword").post(forgotPassword);
 router.route("/resetPassword").post(resetPassword);

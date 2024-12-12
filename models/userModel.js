@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
     userType: {
       type: String,
       required: true,
-      enum: ["superadmin", "classadmin", "student"],
+      enum: ["superadmin", "classadmin", "student","teacher"],
       default: "student",
     },
     userStatus: {
@@ -80,9 +80,6 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
     designation: {
-      type: String,
-    },
-    name: {
       type: String,
     },
     subject: {
