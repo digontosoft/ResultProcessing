@@ -7,11 +7,16 @@ const subjectSchema = new mongoose.Schema({
     },
     subjectCode:{
         type:String,
-        required:true
+        required:true,
+        unique:true
     },
     marks:{
         type: String,
         required:true
+      },
+      class:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Class"
       },
       group:{
         type:String,
