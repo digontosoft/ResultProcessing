@@ -11,9 +11,12 @@ const {
   forgotPassword,
   resetPassword,
   addStudentData,
+  teacherReg,
+  updateTeacher,
 } = require("../controllers/userController");
 
 router.route("/register").post(Registration);
+router.route('/teacher-reg').post(protect,teacherReg)
 router.route("/login").post(Login);
 router.route("/forgotPassword").post(forgotPassword);
 router.route("/resetPassword").post(resetPassword);
@@ -23,4 +26,5 @@ router
   .get(protect, getUserById)
   .put(protect, updateUser)
   .delete(protect, deleteUser);
+router.route("/teacher/:id").put(updateTeacher)
 module.exports = router;

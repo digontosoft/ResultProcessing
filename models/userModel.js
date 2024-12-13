@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
     userType: {
       type: String,
       required: true,
-      enum: ["superadmin", "classadmin", "student"],
+      enum: ["superadmin", "classadmin", "student","teacher"],
       default: "student",
     },
     userStatus: {
@@ -59,23 +59,36 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
     fatherName: {
-      type: String,  
-      trim: true
+      type: String,
+      trim: true,
     },
     motherName: {
       type: String,
-      trim: true
+      trim: true,
     },
     dateOfBirth: {
       type: Date,
     },
     religion: {
       type: String,
-      trim: true
+      trim: true,
     },
     address: {
       type: String,
-    }
+    },
+    position: {
+      type: String,
+    },
+    designation: {
+      type: String,
+    },
+    subject: {
+      type: String,
+    },
+    subject: {
+      type: String,
+    },
+   
   },
   { timestamps: true }
 );
