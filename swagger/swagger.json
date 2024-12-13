@@ -1,0 +1,47 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Result Processing Api Documentation",
+    "version": "1.0.0",
+    "title": "Result Processing Api Documentation",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "email": "apiteam@swagger.io"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "localhost:5000",
+  "basePath": "/api/v1",
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Everything Authentication"
+    }
+  ],
+  "schemes": ["http"],
+  "paths": {
+    "/register": {
+      "$ref": "./paths/auth.json#/register"
+    },
+    "/login": {
+      "$ref": "./paths/auth.json#/login"
+    }
+  },
+  "definitions": {
+    "register": {
+      "$ref": "./definitions/auth.json#/register"
+    },
+    "registerResponse": {
+      "$ref": "./definitions/auth.json#/registerResponse"
+    },
+    "login": {
+      "$ref": "./definitions/auth.json#/login"
+    },
+    "loginResponse": {
+      "$ref": "./definitions/auth.json#/loginResponse"
+    }
+  }
+}

@@ -4,7 +4,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const http = require("http");
 const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./swagger.json");
+const swaggerSpec = require("./swagger");
 const connectDB = require("./config/db");
 const routes = require("./routes/index");
 
@@ -14,9 +14,8 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(cors());
-swaggerDocument.host =
-  process.env.API_HOST || "default-host-if-env-var-not-set";
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Swagger setup
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }

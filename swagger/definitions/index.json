@@ -1,0 +1,14 @@
+{
+  "register": {
+    "$ref": "./auth.json#/register"
+  },
+  "registerResponse": {
+    "$ref": "./auth.json#/registerResponse"
+  },
+  "login": {
+    "$ref": "./auth.json#/login"
+  },
+  "loginResponse": {
+    "$ref": "./auth.json#/loginResponse"
+  }
+} 

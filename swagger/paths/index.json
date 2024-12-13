@@ -1,0 +1,8 @@
+{
+  "/register": {
+    "$ref": "./auth.json#/register"
+  },
+  "/login": {
+    "$ref": "./auth.json#/login"
+  }
+} 
