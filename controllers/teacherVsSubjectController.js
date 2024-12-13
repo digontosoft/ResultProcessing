@@ -16,24 +16,25 @@ const createTeacherVsSubject = asyncHandler(async (req, res) => {
    }
 });
 const getAllTeacherVsSubject = asyncHandler(async (req, res) => {
-    try{
-        console.log("getAllTeacherVsSubject");
+    try {
         const teacherVsSubject = await TeacherVsSubject.find()
-          .populate('teacher_id')
-          .populate('ClassVsSubject.class_id')
-          .populate('ClassVsSubject.subjects');
+            .populate('teacher_id')
+            .populate('ClassVsSubject.class_id', 'name value')
+            .populate('ClassVsSubject.subjects', 'name subjectCode');
         res.status(200).json({ message: "Teacher vs subject fetched successfully", teacherVsSubject });
-    }catch(error){
+    } catch(error) {
         console.log("error", error);
         res.status(500).json({ message: "An error occurred.", error });
     }
 });
 const getTeacherVsSubjectByTeacherId = asyncHandler(async (req, res) => {
-    try{
+    try {
         const { teacher_id } = req.params;
-        const teacherVsSubject = await TeacherVsSubject.find({ teacher_id }).populate("teacherVsSubject.class_id").populate("teacherVsSubject.subjects");
+        const teacherVsSubject = await TeacherVsSubject.find({ teacher_id })
+            .populate('ClassVsSubject.class_id', 'name value')
+            .populate('ClassVsSubject.subjects', 'name subjectCode');
         res.status(200).json({ message: "Teacher vs subject fetched successfully", teacherVsSubject });
-    }catch(error){
+    } catch(error) {
         res.status(500).json({ message: "An error occurred.", error });
     }
 });
