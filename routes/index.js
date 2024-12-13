@@ -6,6 +6,7 @@ const classRoutes = require("./classRoutes");
 const subject = require("./subjectRoutes");
 const classSub = require("./classSubRoutes");
 const teacherSub = require("./teacherSubRoutes");
+const teacherVsSubjectRoutes = require("./teacherVsSubjectRoutes");
 
 module.exports = [
   users,
@@ -16,4 +17,5 @@ module.exports = [
   subject,
   classSub,
   teacherSub,
+  teacherVsSubjectRoutes,
 ];

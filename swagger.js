@@ -1,6 +1,7 @@
 const swaggerJsDoc = require("swagger-jsdoc");
 const authDocs = require("./docs/auth");
 const teacherDocs = require("./docs/teacher");
+const teacherVsSubjectDocs = require("./docs/teacherVsSubject");
 
 // Base Swagger configuration
 const swaggerDefinition = {
@@ -15,6 +16,20 @@ const swaggerDefinition = {
       url: "http://localhost:5000/api/v1", // Adjust this based on your setup
     },
   ],
+  components: {
+    securitySchemes: {
+      Bearer: {
+        type: "http", 
+        scheme: "bearer",
+        bearerFormat: "JWT"
+      }
+    }
+  },
+  security: [
+    {
+      Bearer: []
+    }
+  ]
 };
 
 const swaggerOptions = {
@@ -26,6 +41,7 @@ const swaggerOptions = {
 swaggerOptions.swaggerDefinition.paths = {
   ...authDocs.paths,
   ...teacherDocs.paths,
+  ...teacherVsSubjectDocs.paths,
 };
 
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
