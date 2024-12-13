@@ -5,7 +5,7 @@ const { createTeacherVsSubject, getAllTeacherVsSubject, getTeacherVsSubjectByTea
 
 router.post("/teacher-subjects", protect, createTeacherVsSubject);
 router.get("/teacher-subjects", protect, getAllTeacherVsSubject);
-router.get("/teacher-subjects/:teacherId", protect, getTeacherVsSubjectByTeacherId);
-router.delete("/teacher-subjects/:teacherId", protect, deleteTeacherVsSubject);
+router.get("/teacher-subjects/:teacher_id", protect, getTeacherVsSubjectByTeacherId);
+router.delete("/teacher-subjects/:teacher_id", protect, deleteTeacherVsSubject);
 
 module.exports = router;

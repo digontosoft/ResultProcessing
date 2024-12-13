@@ -183,6 +183,34 @@ const teacherVsSubjectDocs = {
           }
         }
       }
+    },
+    "/teacher-subjects/{teacher_id}": {
+      delete: {
+        tags: ["TeacherVsSubject"],
+        summary: "Delete a teacher subject assignment",
+        parameters: [{
+          in: "path",
+          name: "teacher_id",
+          required: true,
+          schema: {
+            type: "string"
+          },
+          description: "ID of the teacher whose subject assignment needs to be deleted"
+        }],
+        security: [
+          {
+            "Bearer": []
+          }
+        ],
+        responses: {
+          200: {
+            description: "Teacher subject assignment successfully deleted"
+          },
+          404: {
+            description: "Teacher subject assignment not found"
+          }
+        }
+      }
     }
   }
 };

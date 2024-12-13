@@ -21,7 +21,7 @@ const getAllTeacherVsSubject = asyncHandler(async (req, res) => {
             .populate('teacher_id')
             .populate('ClassVsSubject.class_id', 'name value')
             .populate('ClassVsSubject.subjects', 'name subjectCode');
-        res.status(200).json({ message: "Teacher vs subject fetched successfully", teacherVsSubject });
+        res.status(200).json({ message: "Teacher vs subject fetched successfully", data: teacherVsSubject });
     } catch(error) {
         console.log("error", error);
         res.status(500).json({ message: "An error occurred.", error });
@@ -33,7 +33,7 @@ const getTeacherVsSubjectByTeacherId = asyncHandler(async (req, res) => {
         const teacherVsSubject = await TeacherVsSubject.find({ teacher_id })
             .populate('ClassVsSubject.class_id', 'name value')
             .populate('ClassVsSubject.subjects', 'name subjectCode');
-        res.status(200).json({ message: "Teacher vs subject fetched successfully", teacherVsSubject });
+        res.status(200).json({ message: "Teacher vs subject fetched successfully", data: teacherVsSubject });
     } catch(error) {
         res.status(500).json({ message: "An error occurred.", error });
     }
@@ -41,8 +41,10 @@ const getTeacherVsSubjectByTeacherId = asyncHandler(async (req, res) => {
 const deleteTeacherVsSubject = asyncHandler(async (req, res) => {
     try{
         const { teacher_id } = req.params;
+        console.log("teacher_id", teacher_id);
         await TeacherVsSubject.findByIdAndDelete(teacher_id);
-        res.status(200).json({ message: "Teacher vs subject deleted successfully" });
+        console.log("TEacher", TeacherVsSubject);
+        res.status(200).json({ message: "Teacher vs subject deleted successfully", data: teacher_id });
     }catch(error){
         res.status(500).json({ message: "An error occurred.", error });
     }
