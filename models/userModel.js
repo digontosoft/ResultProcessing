@@ -85,9 +85,6 @@ const userSchema = new mongoose.Schema(
     subject: {
       type: String,
     },
-    subject: {
-      type: String,
-    },
    
   },
   { timestamps: true }

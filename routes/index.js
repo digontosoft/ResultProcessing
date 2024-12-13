@@ -5,7 +5,6 @@ const students = require("./studentRoutes");
 const classRoutes = require("./classRoutes");
 const subject = require("./subjectRoutes");
 const classSub = require("./classSubRoutes");
-const teacherSub = require("./teacherSubRoutes");
 const teacherVsSubjectRoutes = require("./teacherVsSubjectRoutes");
 
 module.exports = [
@@ -16,6 +15,5 @@ module.exports = [
   classRoutes,
   subject,
   classSub,
-  teacherSub,
   teacherVsSubjectRoutes,
 ];
