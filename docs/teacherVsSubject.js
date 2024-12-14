@@ -185,6 +185,30 @@ const teacherVsSubjectDocs = {
       }
     },
     "/teacher-subjects/{teacher_id}": {
+      get: {
+        tags: ["TeacherVsSubject"],
+        summary: "Get a teacher subject assignment",
+        description: "Get a teacher subject assignment",
+        security: [
+          {
+            "Bearer": []
+          }
+        ],
+        parameters: [{
+          in: "path",
+          name: "teacher_id",
+          required: true,
+          schema: {
+            type: "string"
+          },
+          description: "ID of the teacher whose subject assignment needs to be fetched"
+        }],
+        responses: {
+          200: {
+            description: "Teacher subject assignment fetched successfully"
+          }
+        }
+      },
       delete: {
         tags: ["TeacherVsSubject"],
         summary: "Delete a teacher subject assignment",
