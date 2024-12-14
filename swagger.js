@@ -3,14 +3,14 @@ const authDocs = require("./docs/auth");
 const teacherDocs = require("./docs/teacher");
 const teacherVsSubjectDocs = require("./docs/teacherVsSubject");
 const resultDocs = require("./docs/result");
-
+const studentDocs = require("./docs/student");
 // Base Swagger configuration
 const swaggerDefinition = {
   openapi: "3.0.0",
   info: {
-    title: "My API Documentation",
+    title: "Result management system API Documentation",
     version: "1.0.0",
-    description: "API documentation for the project",
+    description: "API documentation for the result management system",
   },
   servers: [
     {
@@ -44,6 +44,7 @@ swaggerOptions.swaggerDefinition.paths = {
   ...teacherDocs.paths,
   ...teacherVsSubjectDocs.paths,
   ...resultDocs.paths,
+  ...studentDocs.paths,
 };
 
 const swaggerSpec = swaggerJsDoc(swaggerOptions);

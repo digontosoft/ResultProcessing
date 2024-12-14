@@ -113,6 +113,19 @@ const bulkUploadStudents = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+//get student based on roll number range
+const getStudentByRollRange = asyncHandler(async (req, res) => {
+    const { startRoll, endRoll } = req.body;
+    try {
+        const students = await Student.find({ roll: { $gte: startRoll, $lte: endRoll } });
+        res.json({
+            message: "Students fetched successfully",
+            data: students
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 
 module.exports = {
 	addStudentData,
@@ -120,5 +133,6 @@ module.exports = {
     getStudentById,
     updateStudent,
     deleteStudent,
-    bulkUploadStudents
+    bulkUploadStudents,
+    getStudentByRollRange
 };

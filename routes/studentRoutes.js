@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const { protect, IsSupperadminOrClassadmin } = require("../middleware/auth");
-const { getAllStudent, getStudentById, updateStudent, deleteStudent, addStudentData, bulkUploadStudents } = require("../controllers/studentController");
+const { getAllStudent, getStudentById, updateStudent, deleteStudent, addStudentData, bulkUploadStudents, getStudentByRollRange } = require("../controllers/studentController");
 // Configure multer storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -28,6 +28,7 @@ const upload = multer({
     fileFilter: fileFilter
 });
 router.route("/addStudentData").post(protect, IsSupperadminOrClassadmin, addStudentData);
+router.route("/get-student-by-roll-range").post(protect, getStudentByRollRange);
 router.route("/getAllStudent").get(protect,getAllStudent);
 router
   .route("/student/:id")
