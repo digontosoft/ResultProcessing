@@ -3,11 +3,17 @@ const Student = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 
 const createResult = asyncHandler(async (req, res) => {
-  const { studentId, session, term, className, section, shift, subjectName, subjective, objective ,
-    classAssignment,practical
-  } = req.body;
+  const { session, term, className, section, shift, subjectName,results}= req.body;
+  const insertablePayload = [];
+  for(const result of results){
+    const {studentId, subjective, objective, classAssignment,practical} = result;
+    const payload = {
+      studentId, session, term, className, section, shift, subjectName, subjective, objective, classAssignment,practical
+    }
+    insertablePayload.push(payload);
+  }
   try {
-    const result = await Result.create({ studentId, session, term, className, section, shift, subjectName, subjective, objective, classAssignment,practical });
+    const result = await Result.create(insertablePayload);
     res.status(201).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });

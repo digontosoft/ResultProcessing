@@ -2,6 +2,7 @@ const swaggerJsDoc = require("swagger-jsdoc");
 const authDocs = require("./docs/auth");
 const teacherDocs = require("./docs/teacher");
 const teacherVsSubjectDocs = require("./docs/teacherVsSubject");
+const resultDocs = require("./docs/result");
 
 // Base Swagger configuration
 const swaggerDefinition = {
@@ -42,6 +43,7 @@ swaggerOptions.swaggerDefinition.paths = {
   ...authDocs.paths,
   ...teacherDocs.paths,
   ...teacherVsSubjectDocs.paths,
+  ...resultDocs.paths,
 };
 
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
