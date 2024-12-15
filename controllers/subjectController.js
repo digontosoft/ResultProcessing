@@ -4,7 +4,7 @@ const Class = require("../models/classModel");
 
 const createSubject = asyncHandler(async (req, res) => {
   try {
-    const { name, subjectCode, marks, group, class: id } = req.body;
+    const { name, subjectCode, marks, group, class: id, year } = req.body;
 
     const existingSub = await Subject.findOne({ name, subjectCode });
     if (existingSub) {
@@ -15,13 +15,13 @@ const createSubject = asyncHandler(async (req, res) => {
 
     const data = await Class.findOne({ $or: [{ value: id }, { name: id }] });
 
-
     const SubData = await Subject.create({
       name,
       subjectCode,
       group,
       marks,
       class: data._id,
+      year,
     });
     res.status(201).json({ message: "Subject created successfully", SubData });
   } catch (error) {
@@ -30,15 +30,33 @@ const createSubject = asyncHandler(async (req, res) => {
 });
 
 const getAllSub = asyncHandler(async (req, res) => {
+  const { classId, className, classValue,page=1,limit=15 } = req.query;
+
+  const filter = {};
+  if (classId) filter['class._id'] = classId;
+  if (className) filter['class.name'] = className;
+  if (classValue) filter['class.value'] = classValue;
+
   try {
-    const subjects = await Subject.find().populate("class");
-    return res
-      .status(200)
-      .json({ message: "Subjects fetched successfully", subjects });
+    
+
+    const subjects = await Subject.find()
+      .populate({
+        path: 'class',
+      })
+      // .skip((page - 1) * limit)
+      // .limit(parseInt(limit)).exec();
+    
+
+    return res.status(200).json({
+      message: "Subjects fetched successfully",
+      subjects: subjects,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 });
+
 
 const getSubjectById = asyncHandler(async (req, res) => {
   try {
@@ -76,6 +94,7 @@ const updateSubject = asyncHandler(async (req, res) => {
     subject.class = data._id || subject.class;
     subject.marks = marks || subject.marks;
     subject.group = group || subject.group;
+    subject.year = year || subject.year;
 
     await subject.save();
 

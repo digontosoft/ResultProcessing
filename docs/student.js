@@ -19,6 +19,10 @@ const studentDocs = {
                 properties: {
                   startRoll: { type: "number", example: 1 },
                   endRoll: { type: "number", example: 20 },
+                  class:{type:"string",example: "4" },
+                  section:{type:"string",example: "A" },
+                  shift:{type:"string",example: "morning" },
+                  subject:{type:"string",example: "English 1st Paper" },
                 },
               },
             },

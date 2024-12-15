@@ -115,9 +115,9 @@ const bulkUploadStudents = async (req, res) => {
 };
 //get student based on roll number range
 const getStudentByRollRange = asyncHandler(async (req, res) => {
-    const { startRoll, endRoll } = req.body;
+    const { startRoll, endRoll,class:name, section,shift,subject } = req.body;
     try {
-        const students = await Student.find({ roll: { $gte: startRoll, $lte: endRoll } });
+        const students = await Student.find({ roll: { $gte: startRoll, $lte: endRoll },class:name,shift,section });
         res.json({
             message: "Students fetched successfully",
             data: students
