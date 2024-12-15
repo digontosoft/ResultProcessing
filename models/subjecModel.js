@@ -18,6 +18,10 @@ const subjectSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"Class"
       },
+     year: {
+      type: String,
+      required:true
+      },
       group:{
         type:String,
         enum:["general","science","humanities","business"],
