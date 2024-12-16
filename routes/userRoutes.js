@@ -15,16 +15,26 @@ const {
   updateTeacher,
 } = require("../controllers/userController");
 
+// router.route("/register").post(Registration);
+// router.route('/teacher-reg').post(protect,teacherReg)
+// router.route("/login").post(Login);
+// router.route("/forgotPassword").post(forgotPassword);
+// router.route("/resetPassword").post(resetPassword);
+// router.route("/users").get(protect, getAllUsers);
+// router
+//   .route("/user/:id")
+//   .get(protect, getUserById)
+//   .put(protect, updateUser)
+//   .delete(protect, deleteUser);
+// router.route("/teacher/:id").put(updateTeacher)
+
 router.route("/register").post(Registration);
-router.route('/teacher-reg').post(protect,teacherReg)
+router.route("/teacher-reg").post(teacherReg);
 router.route("/login").post(Login);
 router.route("/forgotPassword").post(forgotPassword);
 router.route("/resetPassword").post(resetPassword);
-router.route("/users").get(protect, getAllUsers);
-router
-  .route("/user/:id")
-  .get(protect, getUserById)
-  .put(protect, updateUser)
-  .delete(protect, deleteUser);
-router.route("/teacher/:id").put(updateTeacher)
+router.route("/users").get(getAllUsers);
+router.route("/user/:id").get(getUserById).put(updateUser).delete(deleteUser);
+router.route("/teacher/:id").put(updateTeacher);
+
 module.exports = router;
