@@ -1336,15 +1336,15 @@
     },
     "login": {
       "type": "object",
-      "required": ["email", "password"],
+      "required": ["phoneNumber", "password"],
       "properties": {
         "email": {
           "type": "string",
-          "example": "classadmin@example.com"
+          "example": "0123456789"
         },
         "password": {
           "type": "string",
-          "example": "password123"
+          "example": "123456"
         }
       }
     },
