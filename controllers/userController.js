@@ -8,19 +8,19 @@ const sendEmail = require("../utils/sentEmail");
 
 //Login for Users
 const Login = asyncHandler(async (req, res) => {
-  const { emailOrUsername, password } = req.body;
+  const { phoneNumber, password } = req.body;
 
-  const user = await User.findOne({
-    $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
-  });
+  const user = await User.findOne({phoneNumber});
+  console.log(user);
+  
   if (user && (await user.matchPassword(password))) {
     res.json({
       message: "login success",
       _id: user._id,
-      email: user.email,
       userType: user.userType,
-      name: `${user?.firstName} ${user?.lastName}`,
+      name: `${user?.firstName}`,
       token: generateToken(user._id),
+      phoneNumber:user.phoneNumber
     });
   } else {
     res.status(202).send(new Error("invalid user name or password"));
@@ -45,6 +45,8 @@ const Registration = asyncHandler(async (req, res) => {
     firstName: req.body.firstName,
     lastName: req.body.lastName,
   });
+  //console.log(user);
+  
 
   try {
     const createUser = await user.save();
@@ -60,29 +62,12 @@ const Registration = asyncHandler(async (req, res) => {
 //teacher Register
 
 const teacherReg = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+  const { phoneNumber,password,firstName,class_id,shift,section,group,userType } = req.body;
 
-  const userExists = await User.findOne({ email });
-
-  //console.log('user exist', userExists);
-
-  if (userExists) {
-    res.status(202).send(new Error("user already exist"));
-  }
+ 
   try {
-    const user = new User({
-      email,
-      password: req.body.password,
-      firstName: req.body.firstName,
-      username: req.body.username,
-      position: req.body.position,
-      designation: req.body.designation,
-      subject: req.body.subject,
-      phoneNumber: req.body.phoneNumber,
-      class_id: req.body.class_id,
-      userType: req.body.userType,
-    });
-    await user.save();
+    const user = await User.create({phoneNumber,userType,group,section,password,firstName,class_id,shift})
+    
     res.json({
       message: "successfully registration",
       data: user,
@@ -94,21 +79,22 @@ const teacherReg = asyncHandler(async (req, res) => {
   }
 });
 
+
+
 const updateTeacher = asyncHandler(async (req, res) => {
   try {
     const user = await User.findOne({
       _id: req.params.id,
-      userType: "teacher",
+      
     });
     //console.log(user);
 
-    user.email = req.body.email || user.email;
+    
     user.firstName = req.body.firstName || user.firstName;
     user.username = req.body.username || user.username;
-    user.position = req.body.position || user.position;
-    user.subject = req.body.subject || user.subject;
-    user.designation = req.body.designation || user.designation;
-    user.phoneNumber = req.body.mobile || user.phoneNumber;
+    user.group = req.body.group || user.group;
+    user.section = req.body.section || user.section;
+    user.shift = req.body.shift || user.shift;
     user.class_id = req.body.class_id || user.class_id;
 
     const updateData = await user.save();

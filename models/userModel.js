@@ -15,16 +15,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    email: {
-      type: String,
-      // unique: true,
-      trim: true,
-      lowercase: true,
-      match: [
-        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-        "Please fill a valid email address",
-      ],
-    },
+    // email: {
+    //   type: String,
+    //   // unique: true,
+    //   trim: true,
+    //   lowercase: true,
+    //   match: [
+    //     /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+    //     "Please fill a valid email address",
+    //   ],
+    // },
     studentId: {
       type: String,
       unique: true,
@@ -37,8 +37,8 @@ const userSchema = new mongoose.Schema(
     userType: {
       type: String,
       required: true,
-      enum: ["superadmin", "classadmin", "student","teacher","operator"],
-      default: "student",
+      enum: ["superadmin","teacher","operator"],
+      default: "teacher",
     },
     userStatus: {
       type: String,
@@ -58,6 +58,7 @@ const userSchema = new mongoose.Schema(
     },
     shift: {
       type: String,
+
     },
     group: {
       type: String,
@@ -87,6 +88,9 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
     subject: {
+      type: String,
+    },
+    shift: {
       type: String,
     },
     username:{
