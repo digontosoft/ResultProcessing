@@ -39,6 +39,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       enum: ["superadmin","teacher","operator"],
       default: "teacher",
+
     },
     userStatus: {
       type: String,
@@ -49,9 +50,9 @@ const userSchema = new mongoose.Schema(
     class: {
       type: String,
     },
-    class_id:{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"Class"
+    class_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class",
     },
     section: {
       type: String,
@@ -62,6 +63,8 @@ const userSchema = new mongoose.Schema(
     },
     group: {
       type: String,
+      enum: ["general", "science", "humanities", "business"],
+      default: "general",
     },
     fatherName: {
       type: String,
@@ -93,10 +96,10 @@ const userSchema = new mongoose.Schema(
     shift: {
       type: String,
     },
-    username:{
+    username: {
+
       type: String,
-    }
-   
+    },
   },
   { timestamps: true }
 );
