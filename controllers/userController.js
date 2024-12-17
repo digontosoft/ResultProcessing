@@ -69,9 +69,9 @@ const teacherReg = asyncHandler(async (req, res) => {
   try {
     const user = new User({
       email,
-      password: req.body.password ? req.body.password : "123456",
+      password: req.body.password,
       firstName: req.body.firstName,
-      lastName: req.body.lastName,
+      username: req.body.username,
       position: req.body.position,
       designation: req.body.designation,
       subject: req.body.subject,
