@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
     userType: {
       type: String,
       required: true,
-      enum: ["superadmin", "classadmin", "student","teacher"],
+      enum: ["superadmin", "classadmin", "student", "teacher"],
       default: "student",
     },
     userStatus: {
@@ -57,6 +57,8 @@ const userSchema = new mongoose.Schema(
     },
     group: {
       type: String,
+      enum: ["general", "science", "humanities", "business"],
+      default: "general",
     },
     fatherName: {
       type: String,
@@ -85,10 +87,9 @@ const userSchema = new mongoose.Schema(
     subject: {
       type: String,
     },
-    username:{
+    username: {
       type: String,
-    }
-   
+    },
   },
   { timestamps: true }
 );
