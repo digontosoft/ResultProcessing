@@ -3,21 +3,24 @@ const User = require("../models/userModel");
 const crypto = require("crypto");
 const generateToken = require("../utils/generateToken");
 const generateResetToken = require("../utils/generateResetToken");
+const bcrypt = require("bcryptjs");
 const sendEmail = require("../utils/sentEmail");
 
 //Login for Users
 const Login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { phoneNumber, password } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({phoneNumber});
+  console.log(user);
+  
   if (user && (await user.matchPassword(password))) {
     res.json({
       message: "login success",
       _id: user._id,
-      email: user.email,
       userType: user.userType,
-      name: `${user?.firstName} ${user?.lastName}`,
+      name: `${user?.firstName}`,
       token: generateToken(user._id),
+      phoneNumber:user.phoneNumber
     });
   } else {
     res.status(202).send(new Error("invalid user name or password"));
@@ -42,6 +45,8 @@ const Registration = asyncHandler(async (req, res) => {
     firstName: req.body.firstName,
     lastName: req.body.lastName,
   });
+  //console.log(user);
+  
 
   try {
     const createUser = await user.save();
@@ -57,60 +62,49 @@ const Registration = asyncHandler(async (req, res) => {
 //teacher Register
 
 const teacherReg = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+  const { phoneNumber,password,firstName,class_id,shift,section,group,userType } = req.body;
 
-  const userExists = await User.findOne({ email });
-
-  //console.log('user exist', userExists);
-
-  if (userExists) {
-    res.status(202).send(new Error("user already exist"));
-  }
+ 
   try {
-    const user = new User({
-      email,
-      password: req.body.password ? req.body.password : "123456",
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      position: req.body.position,
-      designation: req.body.designation,
-      subject: req.body.subject,
-      phoneNumber: req.body.phoneNumber,
-	  userType:'teacher'
-    });
-    await user.save();
+    const user = await User.create({phoneNumber,userType,group,section,password,firstName,class_id,shift})
+    
     res.json({
       message: "successfully registration",
       data: user,
     });
   } catch (error) {
+    console.log(error.message);
+    
     res.status(500).json({ message: error.message });
   }
 });
 
-const updateTeacher = asyncHandler(async(req,res)=>{
-	try {
-		const user = await User.findOne({_id:req.params.id,userType:'teacher'});
-		//console.log(user);
-		
-		user.email = req.body.email || user.email
-		user.firstName = req.body.firstName || user.firstName
-		user.lastName = req.body.lastName || user.lastName
-		user.position = req.body.position || user.position
-		user.subject = req.body.subject || user.subject
-		user.designation = req.body.designation || user.designation
-		user.phoneNumber = req.body.mobile || user.phoneNumber
-		if (req.body.password) {
-			user.password = req.body.password;
-		  }
 
-		const updateData = await user.save()
-		res.json({ message: "Teacher updated successfully",updateData });
 
-	} catch (error) {
-		return res.status(500).json({ message: error.message });
-	}
-})
+const updateTeacher = asyncHandler(async (req, res) => {
+  try {
+    const user = await User.findOne({
+      _id: req.params.id,
+      
+    });
+    //console.log(user);
+
+    
+    user.firstName = req.body.firstName || user.firstName;
+    user.username = req.body.username || user.username;
+    user.group = req.body.group || user.group;
+    user.section = req.body.section || user.section;
+    user.shift = req.body.shift || user.shift;
+    user.class_id = req.body.class_id || user.class_id;
+
+    const updateData = await user.save();
+    res
+      .status(200)
+      .json({ message: "Teacher updated successfully", updateData });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
 
 // Forgot Password
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -187,7 +181,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
-    const allUsers = await User.find({ userType: { $ne: "superadmin" } });
+    const allUsers = await User.find({ userType: { $ne: "superadmin" } }).populate("class_id");
     res.json({
       message: "successfully registration",
       data: allUsers,
@@ -258,6 +252,34 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
+const updatePassword = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify the current password
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+    user.password = newPassword;
+    await user.save();
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 //get agent type user
 module.exports = {
   Login,
@@ -270,5 +292,6 @@ module.exports = {
   resetPassword,
   addStudentData,
   teacherReg,
-  updateTeacher
+  updateTeacher,
+  updatePassword,
 };

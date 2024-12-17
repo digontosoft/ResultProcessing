@@ -1,34 +1,41 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
-const subjectSchema = new mongoose.Schema({
-    name:{
-        type:String,
-        required:true
-    },
-    subjectCode:{
-        type:String,
-        required:true,
-        unique:true
-    },
-    marks:{
-        type: String,
-        required:true
-      },
-      class:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Class"
-      },
-     year: {
+const subjectSchema = new mongoose.Schema(
+  {
+    name: {
       type: String,
-      required:true
-      },
-      group:{
-        type:String,
-        enum:["general","science","humanities","business"],
-        default:'general',
-      } 
-},{timestamps:true})
+      required: true,
+    },
+    subjectCode: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    marks: {
+      type: String,
+      required: true,
+    },
+    class: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class",
+    },
+    year: {
+      type: String,
+      required: true,
+    },
+    group: {
+      type: String,
+      enum: ["general", "science", "humanities", "business"],
+      default: "general",
+    },
+    isFourthSubject: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true }
+);
 
-const Subject = mongoose.model("Subject",subjectSchema)
+const Subject = mongoose.model("Subject", subjectSchema);
 
-module.exports = Subject
+module.exports = Subject;

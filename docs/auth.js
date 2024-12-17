@@ -17,15 +17,15 @@ const authDocs = {
               "application/json": {
                 schema: {
                   type: "object",
-                  required: ["email", "password"],
+                  required: ["phoneNumber", "password"],
                   properties: {
-                    email: {
+                    phoneNumber: {
                       type: "string",
-                      example: "supperadmin@example.com"
+                      example: "0123456789"
                     },
                     password: {
                       type: "string",
-                      example: "password123"
+                      example: "123456"
                     }
                   }
                 }
@@ -48,9 +48,9 @@ const authDocs = {
                         type: "string",
                         example: "60d5ecb74d5c3d1b5c5c5c5c"
                       },
-                      email: {
+                      phoneNumber: {
                         type: "string",
-                        example: "john@example.com"
+                        example: "0123456789"
                       },
                       token: {
                         type: "string",

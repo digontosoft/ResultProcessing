@@ -28,7 +28,7 @@ const upload = multer({
     fileFilter: fileFilter
 });
 router.route("/addStudentData").post(protect, IsSupperadminOrClassadmin, addStudentData);
-router.route("/get-student-by-roll-range").post(protect, getStudentByRollRange);
+router.route("/get-student-by-roll-range").post( getStudentByRollRange);
 router.route("/getAllStudent").get(protect,getAllStudent);
 router
   .route("/student/:id")
