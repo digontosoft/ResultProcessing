@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
     userType: {
       type: String,
       required: true,
-      enum: ["superadmin", "classadmin", "student", "teacher"],
+      enum: ["superadmin", "classadmin", "student", "teacher", "operator"],
       default: "student",
     },
     userStatus: {
@@ -48,6 +48,10 @@ const userSchema = new mongoose.Schema(
     },
     class: {
       type: String,
+    },
+    class_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class",
     },
     section: {
       type: String,

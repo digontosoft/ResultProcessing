@@ -3,13 +3,16 @@ const User = require("../models/userModel");
 const crypto = require("crypto");
 const generateToken = require("../utils/generateToken");
 const generateResetToken = require("../utils/generateResetToken");
+const bcrypt = require("bcryptjs");
 const sendEmail = require("../utils/sentEmail");
 
 //Login for Users
 const Login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { emailOrUsername, password } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({
+    $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
+  });
   if (user && (await user.matchPassword(password))) {
     res.json({
       message: "login success",
@@ -61,7 +64,7 @@ const teacherReg = asyncHandler(async (req, res) => {
 
   const userExists = await User.findOne({ email });
 
-  //console.log('user exist', userExists);
+  console.log('user exist', userExists);
 
   if (userExists) {
     res.status(202).send(new Error("user already exist"));
@@ -76,7 +79,8 @@ const teacherReg = asyncHandler(async (req, res) => {
       designation: req.body.designation,
       subject: req.body.subject,
       phoneNumber: req.body.phoneNumber,
-	  userType:'teacher'
+      class_id: req.body.class_id,
+      userType: "teacher",
     });
     await user.save();
     res.json({
@@ -84,33 +88,37 @@ const teacherReg = asyncHandler(async (req, res) => {
       data: user,
     });
   } catch (error) {
+    console.log(error.message);
+    
     res.status(500).json({ message: error.message });
   }
 });
 
-const updateTeacher = asyncHandler(async(req,res)=>{
-	try {
-		const user = await User.findOne({_id:req.params.id,userType:'teacher'});
-		//console.log(user);
-		
-		user.email = req.body.email || user.email
-		user.firstName = req.body.firstName || user.firstName
-		user.lastName = req.body.lastName || user.lastName
-		user.position = req.body.position || user.position
-		user.subject = req.body.subject || user.subject
-		user.designation = req.body.designation || user.designation
-		user.phoneNumber = req.body.mobile || user.phoneNumber
-		if (req.body.password) {
-			user.password = req.body.password;
-		  }
+const updateTeacher = asyncHandler(async (req, res) => {
+  try {
+    const user = await User.findOne({
+      _id: req.params.id,
+      userType: "teacher",
+    });
+    //console.log(user);
 
-		const updateData = await user.save()
-		res.json({ message: "Teacher updated successfully",updateData });
+    user.email = req.body.email || user.email;
+    user.firstName = req.body.firstName || user.firstName;
+    user.username = req.body.username || user.username;
+    user.position = req.body.position || user.position;
+    user.subject = req.body.subject || user.subject;
+    user.designation = req.body.designation || user.designation;
+    user.phoneNumber = req.body.mobile || user.phoneNumber;
+    user.class_id = req.body.class_id || user.class_id;
 
-	} catch (error) {
-		return res.status(500).json({ message: error.message });
-	}
-})
+    const updateData = await user.save();
+    res
+      .status(200)
+      .json({ message: "Teacher updated successfully", updateData });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
 
 // Forgot Password
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -187,7 +195,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
-    const allUsers = await User.find({ userType: { $ne: "superadmin" } });
+    const allUsers = await User.find({ userType: { $ne: "superadmin" } }).populate("class_id");
     res.json({
       message: "successfully registration",
       data: allUsers,
@@ -258,6 +266,34 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
+const updatePassword = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify the current password
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+    user.password = newPassword;
+    await user.save();
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 //get agent type user
 module.exports = {
   Login,
@@ -270,5 +306,6 @@ module.exports = {
   resetPassword,
   addStudentData,
   teacherReg,
-  updateTeacher
+  updateTeacher,
+  updatePassword,
 };
