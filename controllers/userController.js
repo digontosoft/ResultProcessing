@@ -3,6 +3,7 @@ const User = require("../models/userModel");
 const crypto = require("crypto");
 const generateToken = require("../utils/generateToken");
 const generateResetToken = require("../utils/generateResetToken");
+const bcrypt = require("bcryptjs");
 const sendEmail = require("../utils/sentEmail");
 
 //Login for Users
@@ -95,17 +96,15 @@ const updateTeacher = asyncHandler(async(req,res)=>{
 		
 		user.email = req.body.email || user.email
 		user.firstName = req.body.firstName || user.firstName
-		user.lastName = req.body.lastName || user.lastName
+		user.username = req.body.username || user.username
 		user.position = req.body.position || user.position
 		user.subject = req.body.subject || user.subject
 		user.designation = req.body.designation || user.designation
 		user.phoneNumber = req.body.mobile || user.phoneNumber
-		if (req.body.password) {
-			user.password = req.body.password;
-		  }
+		
 
 		const updateData = await user.save()
-		res.json({ message: "Teacher updated successfully",updateData });
+		res.status(200).json({ message: "Teacher updated successfully",updateData });
 
 	} catch (error) {
 		return res.status(500).json({ message: error.message });
@@ -258,6 +257,32 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
+const updatePassword = asyncHandler(async(req,res)=>{
+  try {
+
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+       // Verify the current password
+       const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+       if (!isPasswordValid) {
+         return res.status(400).json({ message: "Current password is incorrect" });
+       }
+       user.password = newPassword
+       await user.save()
+       res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+})
+
 //get agent type user
 module.exports = {
   Login,
@@ -270,5 +295,6 @@ module.exports = {
   resetPassword,
   addStudentData,
   teacherReg,
-  updateTeacher
+  updateTeacher,
+  updatePassword
 };

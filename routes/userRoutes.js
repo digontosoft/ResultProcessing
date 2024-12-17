@@ -13,6 +13,7 @@ const {
   addStudentData,
   teacherReg,
   updateTeacher,
+  updatePassword,
 } = require("../controllers/userController");
 
 // router.route("/register").post(Registration);
@@ -36,5 +37,6 @@ router.route("/resetPassword").post(resetPassword);
 router.route("/users").get(getAllUsers);
 router.route("/user/:id").get(getUserById).put(updateUser).delete(deleteUser);
 router.route("/teacher/:id").put(updateTeacher);
+router.route("/change-password/:id").put(updatePassword)
 
 module.exports = router;
