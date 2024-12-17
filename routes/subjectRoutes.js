@@ -10,14 +10,22 @@ const { protect, IsSupperadminOrClassadmin } = require("../middleware/auth");
 
 const router = express.Router();
 
-router
-  .route("/create-subject")
-  .post(protect, IsSupperadminOrClassadmin, createSubject);
+// router
+//   .route("/create-subject")
+//   .post(protect, IsSupperadminOrClassadmin, createSubject);
+// router.route("/subjects").get(getAllSub);
+// router
+//   .route("/subject/:id")
+//   .get(getSubjectById)
+//   .delete(protect, IsSupperadminOrClassadmin, deleteSubject)
+//   .put(protect, IsSupperadminOrClassadmin, updateSubject);
+
+router.route("/create-subject").post(createSubject);
 router.route("/subjects").get(getAllSub);
 router
   .route("/subject/:id")
   .get(getSubjectById)
-  .delete(protect, IsSupperadminOrClassadmin, deleteSubject)
-  .put(protect, IsSupperadminOrClassadmin, updateSubject);
+  .delete(deleteSubject)
+  .put(updateSubject);
 
 module.exports = router;

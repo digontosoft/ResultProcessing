@@ -1,5 +1,5 @@
 const Result = require("../models/resultModel");
-const Student = require("../models/userModel");
+const Student = require("../models/studentModel");
 const asyncHandler = require("express-async-handler");
 
 const createResult = asyncHandler(async (req, res) => {
