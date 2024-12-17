@@ -64,7 +64,7 @@ const teacherReg = asyncHandler(async (req, res) => {
 
   const userExists = await User.findOne({ email });
 
-  console.log('user exist', userExists);
+  //console.log('user exist', userExists);
 
   if (userExists) {
     res.status(202).send(new Error("user already exist"));
@@ -80,7 +80,7 @@ const teacherReg = asyncHandler(async (req, res) => {
       subject: req.body.subject,
       phoneNumber: req.body.phoneNumber,
       class_id: req.body.class_id,
-      userType: "teacher",
+      userType: req.body.userType,
     });
     await user.save();
     res.json({
