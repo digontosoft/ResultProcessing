@@ -210,7 +210,7 @@ const addStudentData = asyncHandler(async (req, res) => {
 
 // Get single user by ID
 const getUserById = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.params.id).populate('class_id');
   if (user) {
     res.json(user);
   } else {
