@@ -33,7 +33,7 @@ const Registration = asyncHandler(async (req, res) => {
 
   const userExists = await User.findOne({ email });
 
-  console.log("user exist", userExists);
+  //console.log("user exist", userExists);
 
   if (userExists) {
     res.status(202).send(new Error("user already exist"));
@@ -63,7 +63,13 @@ const Registration = asyncHandler(async (req, res) => {
 
 const teacherReg = asyncHandler(async (req, res) => {
   const { phoneNumber,password,firstName,class_id,shift,section,group,userType } = req.body;
+  const userExists = await User.findOne({ phoneNumber });
 
+  console.log("user exist", userExists);
+
+  if (userExists) {
+    res.status(202).send(new Error("user already exist"));
+  }
  
   try {
     const user = await User.create({phoneNumber,userType,group,section,password,firstName,class_id,shift})
