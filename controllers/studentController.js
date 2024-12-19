@@ -3,9 +3,42 @@ const Student = require("../models/studentModel");
 
 // add student data
 const addStudentData = asyncHandler(async (req, res) => {
-  console.log("api called");
+  const {
+    studentId,
+    roll,
+    class: name,
+    shift,
+    group,
+    section,
+    studentName,
+    fatherName,
+    gender,
+    religion,
+    mobile,
+    year,
+  } = req.body;
+
   try {
-    const studentData = await Student.create(req.body);
+    const student = await Student.findOne({ studentId, roll, class: name });
+    if (student) {
+      return res
+        .status(202)
+        .send(new Error("StudentId and roll already exist"));
+    }
+    const studentData = await Student.create({
+      studentId,
+      roll,
+      class: name,
+      shift,
+      group,
+      section,
+      studentName,
+      fatherName,
+      gender,
+      religion,
+      mobile,
+      year,
+    });
     res.json({
       message: "Student data added successfully",
       data: studentData,
@@ -44,8 +77,12 @@ const updateStudent = asyncHandler(async (req, res) => {
     const student = await Student.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
+    //console.log(student);
+
     res.json({ message: "Class updated successfully", student });
   } catch (error) {
+    console.log(error.message);
+
     res.status(500).json({ message: error.message });
   }
 });
