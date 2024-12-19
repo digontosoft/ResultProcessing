@@ -8,7 +8,18 @@ const addStudentData = asyncHandler(async (req, res) => {
         class:name,shift,group,section,studentName,fatherName,gender,religion,mobile,year} = req.body
 
 	try {
-        const student = await Student.findOne({studentId,roll,class:name})
+        const student = await Student.findOne({
+            $or: [
+              { studentId }, 
+              { 
+                $and: [
+                  { roll },    
+                  { class: name },
+                  {year}
+                ]
+              }
+            ]
+          })
         if(student) {
             return res.status(202).send(new Error("StudentId and roll already exist"))
         }
