@@ -149,14 +149,39 @@ const bulkUploadStudents = async (req, res) => {
 };
 //get student based on roll number range
 const getStudentByRollRange = asyncHandler(async (req, res) => {
-  const { startRoll, endRoll, class: name, section, shift, subject } = req.body;
+  const {
+    startRoll,
+    endRoll,
+    class: name,
+    section,
+    shift,
+    subject,
+    year,
+  } = req.body;
+  let religion = null;
+  if (subject === "Islam and Moral Education") {
+    religion = "Islam";
+  } else if (subject === "Hindu and Moral Education") {
+    religion = "Hindu";
+  } else if (subject === "Christian and Moral Education") {
+    religion = "Christian";
+  } else if (subject === "Buddhist and Moral Education") {
+    religion = "Buddhist";
+  }
   try {
-    const students = await Student.find({
+    const query = {
       roll: { $gte: startRoll, $lte: endRoll },
       class: name,
       shift,
       section,
-    });
+      year,
+    };
+    console.log(religion);
+
+    if (religion) {
+      query.religion = religion;
+    }
+    const students = await Student.find(query);
     res.json({
       message: "Students fetched successfully",
       data: students,
