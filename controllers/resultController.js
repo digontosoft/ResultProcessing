@@ -32,7 +32,28 @@ const getAllResultData = asyncHandler(async(req,res)=>{
         res.status(404).json({ message: 'Result not found' });
     }
 })
-
+//update a single result
+const updateResult = asyncHandler(async(req,res)=>{
+    try {
+        const {id} = req.params;
+        const payload = req.body;
+        console.log("payload",payload)
+        const updatedResult = await Result.findByIdAndUpdate(id,payload);
+        res.status(200).json({message: "Result updated successfully", data: updatedResult});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+//delete a single result
+const deleteResult = asyncHandler(async(req,res)=>{
+    try {
+        const {id} = req.params;
+        const deletedResult = await Result.findByIdAndDelete(id);
+        res.status(200).json({message: "Result deleted successfully", data: deletedResult});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
 const bulkUploadResults = async (req, res) => {
     try {
         if (!req.file) {
@@ -207,4 +228,4 @@ function calculateGrade(totalMarks){
     return "F";
 }
 
-module.exports = { createResult, bulkUploadResults, getIndividualResult,getAllResultData };
+module.exports = { createResult, bulkUploadResults, getIndividualResult,getAllResultData,updateResult ,deleteResult};
