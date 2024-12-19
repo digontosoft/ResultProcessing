@@ -18,35 +18,34 @@ const addStudentData = asyncHandler(async (req, res) => {
     year,
   } = req.body;
 
-  try {
-    const student = await Student.findOne({ studentId, roll, class: name });
-    if (student) {
-      return res
-        .status(202)
-        .send(new Error("StudentId and roll already exist"));
-    }
-    const studentData = await Student.create({
-      studentId,
-      roll,
-      class: name,
-      shift,
-      group,
-      section,
-      studentName,
-      fatherName,
-      gender,
-      religion,
-      mobile,
-      year,
-    });
-    res.json({
-      message: "Student data added successfully",
-      data: studentData,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error adding student data" });
-  }
+
+	try {
+        const student = await Student.findOne({
+            $or: [
+              { studentId }, 
+              { 
+                $and: [
+                  { roll },    
+                  { class: name },
+                  {year}
+                ]
+              }
+            ]
+          })
+        if(student) {
+            return res.status(202).send(new Error("StudentId and roll already exist"))
+        }
+		const studentData = await Student.create({studentId,roll,
+            class:name,shift,group,section,studentName,fatherName,gender,religion,mobile,year});
+		res.json({
+			message: 'Student data added successfully',
+			data: studentData,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: 'Error adding student data' });
+	}
+
 });
 
 const getAllStudent = asyncHandler(async (req, res) => {
