@@ -276,6 +276,106 @@ const getIndividualResult = asyncHandler(async (req, res) => {
   }
 });
 
+const getTebulationSheet = asyncHandler(async (req, res) => {
+  try {
+    const { session, term, className, section, shift } = req.body;
+    const TebulationSheet = [];
+    const students = await Student.find({
+      class: className,
+      section,
+      shift,
+    });
+    // console.log("students", students);
+    for (const student of students) {
+      const results = await Result.find({
+        session,
+        term,
+        className,
+        section,
+        shift,
+        studentId: student.studentId,
+      });
+      const studentInfo = await Student.findOne({
+        studentId: student.studentId,
+        class: className,
+        section,
+        shift,
+      });
+      //subject vs full marks hash data
+      const subjectVsFullMarks = {
+        Bangla1st: 100,
+        Bangla2nd: 100,
+        English1st: 100,
+        English2nd: 100,
+        Bangla: 100,
+        English: 100,
+        Mathematics: 100,
+        Science: 100,
+        "Bangladesh And Global Studies": 100,
+        "Islam and Moral Education": 100,
+        "Religious Education": 100,
+        Physics: 100,
+        Chemistry: 100,
+        Highermath: 100,
+        Biology: 100,
+        ICT: 50,
+      };
+      const resultGrading = {
+        "A+": 5.0,
+        A: 4.0,
+        "A-": 3.5,
+        B: 3.0,
+        C: 2.0,
+        D: 1.0,
+        F: 0.0,
+      };
+      let TotalResult;
+      //there is 3 type of reuslt class 4 to 5, class 6 to 8 and class 9
+      if (className >= 4 && className <= 5) {
+        console.log("class 4 to 5");
+        TotalResult = ResultForClass4To5(
+          results,
+          resultGrading,
+          subjectVsFullMarks
+        );
+        //here will be logic
+      } else if (className >= 6 && className <= 8) {
+        TotalResult = ResultForClass9AndAbove(
+          results,
+          resultGrading,
+          subjectVsFullMarks
+        );
+        //here will be logic
+      } else if (className == 9) {
+        TotalResult = ResultForClass9AndAbove(
+          results,
+          resultGrading,
+          subjectVsFullMarks
+        );
+        //here will be logic
+      }
+      // Calculate summary using the new function
+      const summary = await calculateResultSummary(
+        TotalResult,
+        className,
+        section,
+        shift
+      );
+      TebulationSheet.push({
+        studentInfo,
+        TotalResult,
+        summary,
+      });
+    }
+    res.status(200).json({
+      Message: "Tebulation sheet fetched successfully",
+      Data: TebulationSheet,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 function calculateGrade(totalMarks) {
   if (totalMarks >= 80) return "A+";
   if (totalMarks >= 70) return "A";
@@ -369,4 +469,5 @@ module.exports = {
   getAllResultData,
   updateResult,
   deleteResult,
+  getTebulationSheet,
 };
