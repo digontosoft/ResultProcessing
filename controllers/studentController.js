@@ -194,6 +194,8 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
       term
     });
     console.log("results",results);
+    console.log(students);
+    
     //i will only return those students who are not in results
     const studentsNotInResults = students.filter(student => !results.some(result => result.studentId === student.studentId));
     res.json({
