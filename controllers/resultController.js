@@ -188,6 +188,8 @@ const getRemark = (gpa) => {
 const getIndividualResult = asyncHandler(async (req, res) => {
   try {
     const { session, term, className, section, shift, studentId } = req.body;
+    const SubjectWiseHighestMarks = await GetSubjectWiseHighestMarks(session, term, className, section, shift);
+    // console.log("SubjectWiseHighestMarks", SubjectWiseHighestMarks);
     const results = await Result.find({
       session,
       term,
@@ -237,21 +239,24 @@ const getIndividualResult = asyncHandler(async (req, res) => {
       TotalResult = ResultForClass4To5(
         results,
         resultGrading,
-        subjectVsFullMarks
+        subjectVsFullMarks,
+        SubjectWiseHighestMarks
       );
       //here will be logic
     } else if (className >= 6 && className <= 8) {
       TotalResult = ResultForClass9AndAbove(
         results,
         resultGrading,
-        subjectVsFullMarks
+        subjectVsFullMarks,
+        SubjectWiseHighestMarks
       );
       //here will be logic
     } else if (className == 9) {
       TotalResult = ResultForClass9AndAbove(
         results,
         resultGrading,
-        subjectVsFullMarks
+        subjectVsFullMarks,
+        SubjectWiseHighestMarks
       );
       //here will be logic
     }
@@ -340,7 +345,7 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
         );
         //here will be logic
       } else if (className >= 6 && className <= 8) {
-        TotalResult = ResultForClass9AndAbove(
+        TotalResult = ResultForClass6to8(
           results,
           resultGrading,
           subjectVsFullMarks
@@ -372,6 +377,7 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
       Data: TebulationSheet,
     });
   } catch (error) {
+    console.log("error", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -385,7 +391,7 @@ function calculateGrade(totalMarks) {
   if (totalMarks >= 33) return "D";
   return "F";
 }
-function ResultForClass4To5(results, resultGrading, subjectVsFullMarks) {
+function ResultForClass4To5(results, resultGrading, subjectVsFullMarks, SubjectWiseHighestMarks) {
   const TotalResult = [];
   //for class 4 and 5 there is no CA and marks is always 100%
 
@@ -414,13 +420,13 @@ function ResultForClass4To5(results, resultGrading, subjectVsFullMarks) {
             : Math.floor(totalMarks)
         )
       ],
-      Highest: subjectVsFullMarks[subjectName],
+      Highest: SubjectWiseHighestMarks?.[subjectName] ?? 0,
     };
     TotalResult.push(subjectWiseResult);
   }
   return TotalResult;
 }
-function ResultForClass9AndAbove(results, resultGrading, subjectVsFullMarks) {
+function ResultForClass9AndAbove(results, resultGrading, subjectVsFullMarks, SubjectWiseHighestMarks) {
   const TotalResult = [];
   for (const result of results) {
     const { subjectName, subjective, objective, classAssignment, practical } =
@@ -455,11 +461,68 @@ function ResultForClass9AndAbove(results, resultGrading, subjectVsFullMarks) {
             : Math.floor(totalRawMarks)
         )
       ],
-      Highest: subjectVsFullMarks[subjectName],
+      Highest: SubjectWiseHighestMarks?.[subjectName] ?? 0,
     };
     TotalResult.push(subjectWiseResult);
   }
   return TotalResult;
+}
+function ResultForClass6to8(results, resultGrading, subjectVsFullMarks, SubjectWiseHighestMarks) {
+    const TotalResult = [];
+    for (const result of results) {
+      const { subjectName, subjective, objective, classAssignment, practical } =
+        result;
+      const rawMarks80 =
+        ((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.8;
+      const totalRawMarks = rawMarks80 + (classAssignment ?? 18);
+      const subjectWiseResult = {
+        subject: subjectName,
+        fullMarks: subjectVsFullMarks[subjectName],
+        subjective: subjective ?? 0,
+        objective: objective ?? 0,
+        practical: practical ?? 0,
+        "80%":
+          Math.abs(rawMarks80 % 1) >= 0.05
+            ? Math.round(rawMarks80)
+            : Math.floor(rawMarks80),
+        "CA(20%)": classAssignment ?? 18,
+        totalMarks:
+          Math.abs(totalRawMarks % 1) >= 0.05
+            ? Math.round(totalRawMarks)
+            : Math.floor(totalRawMarks),
+        grade: calculateGrade(
+          Math.abs(totalRawMarks % 1) >= 0.05
+            ? Math.round(totalRawMarks)
+            : Math.floor(totalRawMarks)
+        ),
+        GP: resultGrading[
+          calculateGrade(
+            Math.abs(totalRawMarks % 1) >= 0.05
+              ? Math.round(totalRawMarks)
+              : Math.floor(totalRawMarks)
+          )
+        ],
+        Highest: SubjectWiseHighestMarks?.[subjectName] ?? 0,
+      };
+      TotalResult.push(subjectWiseResult);
+    }
+    return TotalResult;
+  }
+async function GetSubjectWiseHighestMarks(session, term, className, section, shift){
+  const results = await Result.find({
+    session,
+    term,
+    className,
+    section,
+    shift,
+  });
+  const SubjectWiseHighestMarks = {};
+  for(const result of results){
+    const {subjectName, subjective, objective, practical} = result;
+    const totalMarks = (subjective ?? 0) + (objective ?? 0) + (practical ?? 0);
+    SubjectWiseHighestMarks[subjectName] = totalMarks;
+  }
+  return SubjectWiseHighestMarks;
 }
 
 module.exports = {
