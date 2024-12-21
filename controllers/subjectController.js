@@ -4,7 +4,15 @@ const Class = require("../models/classModel");
 
 const createSubject = asyncHandler(async (req, res) => {
   try {
-    const { name, subjectCode, marks, group, class: classId, year } = req.body;
+    const {
+      name,
+      subjectCode,
+      marks,
+      group,
+      class: classId,
+      year,
+      isFourthSubject,
+    } = req.body;
 
     const existingSub = await Subject.findOne({ name, subjectCode });
 
@@ -25,6 +33,7 @@ const createSubject = asyncHandler(async (req, res) => {
       marks,
       class: classId,
       year,
+      isFourthSubject,
     });
     res.status(201).json({ message: "Subject created successfully", SubData });
   } catch (error) {
@@ -79,7 +88,15 @@ const deleteSubject = asyncHandler(async (req, res) => {
 
 const updateSubject = asyncHandler(async (req, res) => {
   try {
-    const { name, subjectCode, marks, group, class: classId, year } = req.body;
+    const {
+      name,
+      subjectCode,
+      marks,
+      group,
+      class: classId,
+      year,
+      isFourthSubject,
+    } = req.body;
     const subject = await Subject.findById(req.params.id);
     console.log("subject", subject);
 
@@ -99,6 +116,7 @@ const updateSubject = asyncHandler(async (req, res) => {
     subject.marks = marks || subject.marks;
     subject.group = group || subject.group;
     subject.year = year || subject.year;
+    subject.isFourthSubject = isFourthSubject || subject.isFourthSubject;
 
     await subject.save();
 
