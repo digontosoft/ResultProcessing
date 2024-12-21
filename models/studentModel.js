@@ -60,6 +60,10 @@ const studentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    fourthSubjectCode:{
+      type: String,
+      trim: true,
+    }
 
   },
   { timestamps: true }
