@@ -4,7 +4,7 @@ const Class = require("../models/classModel");
 
 const createSubject = asyncHandler(async (req, res) => {
   try {
-    const { name, subjectCode, marks, group, class: id, year } = req.body;
+    const { name, subjectCode, marks, group, class: classId, year } = req.body;
 
     const existingSub = await Subject.findOne({ name, subjectCode });
 
@@ -14,19 +14,22 @@ const createSubject = asyncHandler(async (req, res) => {
       });
     }
 
-    const data = await Class.findOne({ $or: [{ value: id }, { name: id }] });
-
+    // const data = await Class.findOne({
+    //   $or: [{ value: className }, { name: className }],
+    // });
+    // console.log("data:", data);
     const SubData = await Subject.create({
       name,
       subjectCode,
       group,
       marks,
-      class: data._id,
+      class: classId,
       year,
     });
     res.status(201).json({ message: "Subject created successfully", SubData });
   } catch (error) {
     res.status(500).json({ message: error.message });
+    console.log("error", error);
   }
 });
 
@@ -76,14 +79,7 @@ const deleteSubject = asyncHandler(async (req, res) => {
 
 const updateSubject = asyncHandler(async (req, res) => {
   try {
-    const {
-      name,
-      subjectCode,
-      marks,
-      group,
-      class: className,
-      year,
-    } = req.body;
+    const { name, subjectCode, marks, group, class: classId, year } = req.body;
     const subject = await Subject.findById(req.params.id);
     console.log("subject", subject);
 
@@ -91,15 +87,15 @@ const updateSubject = asyncHandler(async (req, res) => {
       res.status(404).json({ message: "Subject not found" });
       return;
     }
-    const data = await Class.findOne({
-      $or: [{ value: className }, { name: className }],
-    });
+    // const data = await Class.findOne({
+    //   $or: [{ value: className }, { name: className }],
+    // });
 
     //console.log(data);
 
     subject.name = name || subject.name;
     subject.subjectCode = subjectCode || subject.subjectCode;
-    subject.class = data._id || subject.class;
+    subject.class = classId || subject.class;
     subject.marks = marks || subject.marks;
     subject.group = group || subject.group;
     subject.year = year || subject.year;
