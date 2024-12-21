@@ -85,7 +85,7 @@ const updateSubject = asyncHandler(async (req, res) => {
       year,
     } = req.body;
     const subject = await Subject.findById(req.params.id);
-    //console.log("subject",subject);
+    console.log("subject", subject);
 
     if (!subject) {
       res.status(404).json({ message: "Subject not found" });
