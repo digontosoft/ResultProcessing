@@ -81,14 +81,19 @@ const deleteSubject = asyncHandler(async (req, res) => {
 
 const updateSubject = asyncHandler(async (req, res) => {
   try {
-    const { name, subjectCode, marks, group, class: id } = req.body;
+    const { name, subjectCode, marks, group, class: className,year } = req.body;
     const subject = await Subject.findById(req.params.id);
+    //console.log("subject",subject);
+    
 
     if (!subject) {
       res.status(404).json({ message: "Subject not found" });
       return;
     }
-    const data = await Class.findOne({ $or: [{ value: id }, { name: id }] });
+    const data = await Class.findOne({ $or: [{ value: className }, { name:className }] });
+
+    //console.log(data);
+    
 
     subject.name = name || subject.name;
     subject.subjectCode = subjectCode || subject.subjectCode;
@@ -101,6 +106,8 @@ const updateSubject = asyncHandler(async (req, res) => {
 
     res.json({ message: "Subject updated successfully", subject });
   } catch (error) {
+    //console.log(error.message);
+    
     res.status(500).json({ message: error.message });
   }
 });

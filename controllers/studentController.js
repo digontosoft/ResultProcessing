@@ -17,6 +17,7 @@ const addStudentData = asyncHandler(async (req, res) => {
     religion,
     mobile,
     year,
+    fourthSubjectCode
   } = req.body;
 
 
@@ -37,7 +38,7 @@ const addStudentData = asyncHandler(async (req, res) => {
             return res.status(202).send(new Error("StudentId and roll already exist"))
         }
 		const studentData = await Student.create({studentId,roll,
-            class:name,shift,group,section,studentName,fatherName,gender,religion,mobile,year});
+            class:name,shift,group,section,studentName,fatherName,gender,religion,mobile,year,fourthSubjectCode});
 		res.json({
 			message: 'Student data added successfully',
 			data: studentData,
