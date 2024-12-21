@@ -14,7 +14,7 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: "https://result.digontosoft.com/api/v1", // Adjust this based on your setup
+      url: "http://localhost:5000/api/v1", // Adjust this based on your setup
     },
   ],
   components: {
