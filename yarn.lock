@@ -918,6 +918,11 @@
   "resolved" "https://registry.npmjs.org/negotiator/-/negotiator-0.6.3.tgz"
   "version" "0.6.3"
 
+"nodemailer@^6.9.16":
+  "integrity" "sha512-psAuZdTIRN08HKVd/E8ObdV6NO7NTBY3KsC30F7M4H1OnmLCUNaS56FpYxyb26zWLSyYF9Ozch9KYHhHegsiOQ=="
+  "resolved" "https://registry.npmjs.org/nodemailer/-/nodemailer-6.9.16.tgz"
+  "version" "6.9.16"
+
 "nodemon@^3.1.0":
   "integrity" "sha512-xqlktYlDMCepBJd43ZQhjWwMw2obW/JRvkrLxq5RCNcuDDX1DbcPT+qT1IlIIdf+DhnWs90JpTMe+Y5KxOchvA=="
   "resolved" "https://registry.npmjs.org/nodemon/-/nodemon-3.1.0.tgz"
