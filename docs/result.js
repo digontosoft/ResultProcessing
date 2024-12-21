@@ -255,7 +255,233 @@ const resultDocs = {
         }
       }
     }
+    ,
+    "/result/individual": {
+      post: {
+        tags: ["Result"],
+        summary: "Get individual student result",
+        description: "Retrieve detailed result for a specific student",
+        security: [
+          {
+            "Bearer": []
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  session: {
+                    type: "string",
+                    example: "2024"
+                  },
+                  term: {
+                    type: "string",
+                    example: "Annual"
+                  },
+                  className: {
+                    type: "string",
+                    example: "5"
+                  },
+                  section: {
+                    type: "string",
+                    example: "A"
+                  },
+                  shift: {
+                    type: "string",
+                    example: "Morning"
+                  },
+                  studentId: {
+                    type: "string",
+                    example: "5511"
+                  }
+                },
+                required: ["session", "term", "className", "section", "shift", "studentId"]
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: "Successful operation",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    studentInfo: {
+                      type: "object"
+                    },
+                    results: {
+                      type: "array",
+                      items: {
+                        type: "object"
+                      }
+                    },
+                    summary: {
+                      type: "object",
+                      properties: {
+                        totalMarks: {
+                          type: "number"
+                        },
+                        obtainedMarks: {
+                          type: "number"
+                        },
+                        studentsCount: {
+                          type: "number"
+                        },
+                        gpaWithout4th: {
+                          type: "number"
+                        },
+                        gpa: {
+                          type: "number"
+                        },
+                        remark: {
+                          type: "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          404: {
+            description: "Result not found",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Result not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    ,
+    "/result/tebulation-sheet": {
+      post: {
+        tags: ["Result"],
+        summary: "Get tabulation sheet for a class",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  session: {
+                    type: "string",
+                    example: "2024"
+                  },
+                  term: {
+                    type: "string",
+                    example: "Annual"
+                  },
+                  className: {
+                    type: "string",
+                    example: "5"
+                  },
+                  section: {
+                    type: "string",
+                    example: "A"
+                  },
+                  shift: {
+                    type: "string",
+                    example: "Morning"
+                  }
+                },
+                required: ["session", "term", "className", "section", "shift"]
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: "Tabulation sheet retrieved successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Tabulation sheet fetched successfully"
+                    },
+                    data: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          studentId: {
+                            type: "string"
+                          },
+                          studentName: {
+                            type: "string"
+                          },
+                          subjects: {
+                            type: "array",
+                            items: {
+                              type: "object",
+                              properties: {
+                                name: {
+                                  type: "string"
+                                },
+                                marks: {
+                                  type: "number"
+                                },
+                                grade: {
+                                  type: "string"
+                                }
+                              }
+                            }
+                          },
+                          totalMarks: {
+                            type: "number"
+                          },
+                          gpa: {
+                            type: "number"
+                          },
+                          grade: {
+                            type: "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          404: {
+            description: "No results found",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "No results found for the given criteria"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }   
   }
-}
+};
 
 module.exports = resultDocs;

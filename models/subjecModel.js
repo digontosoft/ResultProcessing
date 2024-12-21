@@ -9,7 +9,7 @@ const subjectSchema = new mongoose.Schema(
     subjectCode: {
       type: String,
       required: true,
-      unique: true,
+      unique:true,
     },
     marks: {
       type: String,

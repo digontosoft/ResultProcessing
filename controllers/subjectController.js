@@ -7,6 +7,7 @@ const createSubject = asyncHandler(async (req, res) => {
     const { name, subjectCode, marks, group, class: id, year } = req.body;
 
     const existingSub = await Subject.findOne({ name, subjectCode });
+    
     if (existingSub) {
       return res.status(400).json({
         message: "Subject with the same name and code already exists",

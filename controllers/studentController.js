@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Student = require("../models/studentModel");
+const Result = require("../models/resultModel");
 
 // add student data
 const addStudentData = asyncHandler(async (req, res) => {
@@ -155,7 +156,8 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
     section,
     shift,
     subject,
-    year,
+    session,
+    term,
   } = req.body;
   let religion = null;
   if (subject === "Islam and Moral Education") {
@@ -173,17 +175,46 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
       class: name,
       shift,
       section,
-      year,
+      year: session,
     };
-    console.log(religion);
+    // console.log(religion);
 
     if (religion) {
       query.religion = religion;
     }
+    console.log(query);
+    
     const students = await Student.find(query);
+    // now get result for this subject,class,shift,section,session,term 
+    // console.log("subject",name)
+    const results = await Result.find({
+      subjectName: subject,
+      className: name,
+      shift,
+      section,
+      session,
+      term
+    });
+
+    console.log("query",{subjectName: subject,
+      className: name,
+      shift,
+      section,
+      session,
+      term});
+    
+    console.log("students",students);
+
+    
+    
+    console.log("results",results);
+    //console.log(st);
+    
+    //i will only return those students who are not in results
+    const studentsNotInResults = students.filter(student => !results.some(result => result.studentId === student.studentId));
     res.json({
       message: "Students fetched successfully",
-      data: students,
+      data: studentsNotInResults,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
