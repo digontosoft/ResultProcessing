@@ -84,7 +84,7 @@ const bulkUploadResults = async (req, res) => {
     const results = [];
     for (const row of data) {
       const result = await Result.create({
-        studentId: row.Roll,
+        studentId: row.studentId,
         // studentName: row['Student Name'],
         subjective: row.CQ,
         objective: row.MCQ,

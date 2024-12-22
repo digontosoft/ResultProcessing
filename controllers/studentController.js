@@ -22,17 +22,10 @@ const addStudentData = asyncHandler(async (req, res) => {
 
   try {
     const student = await Student.findOne({
-      $or: [
-        { studentId },
-        {
-          $and: [{ roll }, { class: name }, { year }],
-        },
-      ],
+      studentId,
     });
     if (student) {
-      return res
-        .status(202)
-        .send(new Error("StudentId and roll already exist"));
+      return res.status(202).send(new Error("StudentId already exist"));
     }
     const studentData = await Student.create({
       studentId,
