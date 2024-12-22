@@ -17,7 +17,6 @@ const studentSchema = new mongoose.Schema(
     group: {
       type: String,
       required: true,
-      enum: ["Science", "Commerce", "Arts","General"],
       trim: true,
     },
     section: {
@@ -39,15 +38,15 @@ const studentSchema = new mongoose.Schema(
       trim: true,
     },
     gender: {
-        type: String,
-        required: true,
-        enum: ["Male", "Female", "Other"],
-        trim: true,
-      },
+      type: String,
+      required: true,
+      enum: ["Male", "Female", "Other"],
+      trim: true,
+    },
     religion: {
-        type: String,
-        trim: true,
-      },
+      type: String,
+      trim: true,
+    },
     mobile: {
       type: String,
       trim: true,
@@ -60,11 +59,10 @@ const studentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    fourthSubjectCode:{
+    fourthSubjectCode: {
       type: String,
       trim: true,
-    }
-
+    },
   },
   { timestamps: true }
 );
