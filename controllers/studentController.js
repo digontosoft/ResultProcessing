@@ -17,36 +17,46 @@ const addStudentData = asyncHandler(async (req, res) => {
     religion,
     mobile,
     year,
+    fourthSubjectCode,
   } = req.body;
 
-
-	try {
-        const student = await Student.findOne({
-            $or: [
-              { studentId }, 
-              { 
-                $and: [
-                  { roll },    
-                  { class: name },
-                  {year}
-                ]
-              }
-            ]
-          })
-        if(student) {
-            return res.status(202).send(new Error("StudentId and roll already exist"))
-        }
-		const studentData = await Student.create({studentId,roll,
-            class:name,shift,group,section,studentName,fatherName,gender,religion,mobile,year});
-		res.json({
-			message: 'Student data added successfully',
-			data: studentData,
-		});
-	} catch (error) {
-		console.log(error);
-		res.status(500).json({ message: 'Error adding student data' });
-	}
-
+  try {
+    const student = await Student.findOne({
+      $or: [
+        { studentId },
+        {
+          $and: [{ roll }, { class: name }, { year }],
+        },
+      ],
+    });
+    if (student) {
+      return res
+        .status(202)
+        .send(new Error("StudentId and roll already exist"));
+    }
+    const studentData = await Student.create({
+      studentId,
+      roll,
+      class: name,
+      shift,
+      group,
+      section,
+      studentName,
+      fatherName,
+      gender,
+      religion,
+      mobile,
+      year,
+      fourthSubjectCode,
+    });
+    res.json({
+      message: "Student data added successfully",
+      data: studentData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error adding student data" });
+  }
 });
 
 const getAllStudent = asyncHandler(async (req, res) => {
@@ -89,9 +99,9 @@ const updateStudent = asyncHandler(async (req, res) => {
 
 // Delete single user
 const deleteStudent = asyncHandler(async (req, res) => {
-  const user = await Student.findById(req.params.id);
+  const user = await Student.findByIdAndDelete(req.params.id);
   if (user) {
-    await Student.deleteOne();
+    // await Student.deleteOne();
     res.json({ message: "User deleted successfully" });
   } else {
     res.status(404).json({ message: "User not found" });
@@ -183,9 +193,9 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
       query.religion = religion;
     }
     console.log(query);
-    
+
     const students = await Student.find(query);
-    // now get result for this subject,class,shift,section,session,term 
+    // now get result for this subject,class,shift,section,session,term
     // console.log("subject",name)
     const results = await Result.find({
       subjectName: subject,
@@ -193,25 +203,28 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
       shift,
       section,
       session,
-      term
+      term,
     });
 
-    console.log("query",{subjectName: subject,
+    console.log("query", {
+      subjectName: subject,
       className: name,
       shift,
       section,
       session,
-      term});
-    
-    console.log("students",students);
+      term,
+    });
 
-    
-    
-    console.log("results",results);
+    console.log("students", students);
+
+    console.log("results", results);
     //console.log(st);
-    
+
     //i will only return those students who are not in results
-    const studentsNotInResults = students.filter(student => !results.some(result => result.studentId === student.studentId));
+    const studentsNotInResults = students.filter(
+      (student) =>
+        !results.some((result) => result.studentId === student.studentId)
+    );
     res.json({
       message: "Students fetched successfully",
       data: studentsNotInResults,

@@ -26,8 +26,8 @@ const subjectSchema = new mongoose.Schema(
     },
     group: {
       type: String,
-      enum: ["general", "science", "humanities", "business"],
-      default: "general",
+      enum: ["General", "Science", "Humanities", "Business"],
+      default: "General",
     },
     isFourthSubject: {
       type: Boolean,
