@@ -6,6 +6,7 @@ const http = require("http");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 const connectDB = require("./config/db");
+
 const routes = require("./routes/index");
 
 dotenv.config();
