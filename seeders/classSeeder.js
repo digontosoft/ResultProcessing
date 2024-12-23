@@ -15,7 +15,7 @@ const classes = [
   { name: "VII", value: "7" },
   { name: "VIII", value: "8" },
   { name: "IX", value: "9" },
-  { name: "X", value: "10" }
+  { name: "X", value: "10" },
 ];
 
 const seedClasses = async () => {
@@ -34,7 +34,6 @@ const seedClasses = async () => {
     // Disconnect from MongoDB
     await mongoose.disconnect();
     console.log("Disconnected from MongoDB...");
-
   } catch (error) {
     console.error("Error seeding classes:", error);
     process.exit(1);
@@ -42,4 +41,4 @@ const seedClasses = async () => {
 };
 
 // Run the seeder
-seedClasses(); 
+seedClasses();

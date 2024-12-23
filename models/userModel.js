@@ -63,8 +63,8 @@ const userSchema = new mongoose.Schema(
     },
     group: {
       type: String,
-      enum: ["general", "science", "humanities", "business"],
-      default: "general",
+      enum: ["General", "Science", "Humanities", "Business"],
+      default: "General",
     },
     fatherName: {
       type: String,
