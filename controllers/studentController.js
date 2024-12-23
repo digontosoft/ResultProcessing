@@ -129,6 +129,7 @@ const bulkUploadStudents = async (req, res) => {
         section: row.section,
         shift: row.shift,
         group: row.group,
+        fourthSubjectCode: row.fourthSubjectCode,
         year: row.year,
         mobile: row.mobile,
       });

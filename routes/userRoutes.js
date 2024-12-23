@@ -11,7 +11,7 @@ const {
   forgotPassword,
   resetPassword,
   addStudentData,
-  
+
   updateTeacher,
   updatePassword,
   teacherReg,
@@ -38,6 +38,6 @@ router.route("/resetPassword").post(resetPassword);
 router.route("/users").get(getAllUsers);
 router.route("/user/:id").get(getUserById).put(updateUser).delete(deleteUser);
 router.route("/teacher/:id").put(updateTeacher);
-router.route("/change-password/:id").put(updatePassword)
+router.route("/change-password/:id").put(updatePassword);
 
 module.exports = router;
