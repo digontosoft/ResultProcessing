@@ -394,7 +394,15 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
+const getMarksheet = asyncHandler(async (req, res) => {
+  try {
+    console.log("req.body", req.body);
+    const { session, term, className, section, shift } = req.body;
+    return res.status(200).json({ message: "Marksheet fetched successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 function calculateGrade(totalMarks) {
   if (totalMarks >= 80) return "A+";
   if (totalMarks >= 70) return "A";
@@ -571,4 +579,5 @@ module.exports = {
   updateResult,
   deleteResult,
   getTebulationSheet,
+  getMarksheet,
 };
