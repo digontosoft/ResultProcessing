@@ -256,7 +256,7 @@ const getIndividualResult = asyncHandler(async (req, res) => {
         SubjectWiseHighestMarks
       );
       //here will be logic
-    } else if (className >= 6 && className <= 8) {
+    } else if (className >= 6 && className <= 9) {
       TotalResult = ResultForClass9AndAbove(
         results,
         resultGrading,
@@ -264,7 +264,7 @@ const getIndividualResult = asyncHandler(async (req, res) => {
         SubjectWiseHighestMarks
       );
       //here will be logic
-    } else if (className == 9) {
+    } else if (className == 10) {
       TotalResult = ResultForClass9AndAbove(
         results,
         resultGrading,
