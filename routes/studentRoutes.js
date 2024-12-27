@@ -11,6 +11,8 @@ const {
   bulkUploadStudents,
   getStudentByRollRange,
   studentDeleteMany,
+  studentPromotion
+
 } = require("../controllers/studentController");
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -42,6 +44,7 @@ const upload = multer({
 router
   .route("/addStudentData")
   .post(protect, IsSupperadminOrClassadmin, addStudentData);
+router.route("/student-promotion").post(studentPromotion);
 router.route("/get-student-by-roll-range").post(getStudentByRollRange);
 // router.route("/getAllStudent").get(protect,getAllStudent);
 router.route("/getAllStudent").get(getAllStudent);

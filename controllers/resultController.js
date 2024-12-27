@@ -34,7 +34,39 @@ const createResult = asyncHandler(async (req, res) => {
 
 const getAllResultData = asyncHandler(async (req, res) => {
   try {
-    const allResult = await Result.find();
+    const allResult = await Result.aggregate([
+      {
+        $lookup: {
+          from: "students",
+          localField: "studentId", 
+          foreignField: "studentId",
+          as: "studentInfo"
+        }
+      },
+      {
+        $unwind: "$studentInfo"
+      },
+      {
+        $project: {
+          studentId: 1,
+          session: 1,
+          term: 1,
+          className: 1,
+          section: 1,
+          shift: 1,
+          subjectName: 1,
+          subjective: 1,
+          objective: 1,
+          classAssignment: 1,
+          practical: 1,
+          totalMarks: 1,
+          grade: 1,
+          remarks: 1,
+          roll: "$studentInfo.roll",
+          studentName: "$studentInfo.studentName"
+        }
+      }
+    ]);
     res.json({
       message: "successfully get all result",
       data: allResult,
@@ -49,7 +81,7 @@ const updateResult = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
     const payload = req.body;
-    console.log("payload", payload);
+    // console.log("payload", payload);
     const updatedResult = await Result.findByIdAndUpdate(id, payload);
     res
       .status(200)
@@ -248,7 +280,7 @@ const getIndividualResult = asyncHandler(async (req, res) => {
     let TotalResult;
     //there is 3 type of reuslt class 4 to 5, class 6 to 8 and class 9
     if (className >= 4 && className <= 5) {
-      console.log("class 4 to 5");
+      // console.log("class 4 to 5");
       TotalResult = ResultForClass4To5(
         results,
         resultGrading,
@@ -256,7 +288,7 @@ const getIndividualResult = asyncHandler(async (req, res) => {
         SubjectWiseHighestMarks
       );
       //here will be logic
-    } else if (className >= 6 && className <= 8) {
+    } else if (className >= 6 && className <= 9) {
       TotalResult = ResultForClass9AndAbove(
         results,
         resultGrading,
@@ -264,7 +296,7 @@ const getIndividualResult = asyncHandler(async (req, res) => {
         SubjectWiseHighestMarks
       );
       //here will be logic
-    } else if (className == 9) {
+    } else if (className == 10) {
       TotalResult = ResultForClass9AndAbove(
         results,
         resultGrading,
@@ -350,7 +382,7 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
       let TotalResult;
       //there is 3 type of reuslt class 4 to 5, class 6 to 8 and class 9
       if (className >= 4 && className <= 5) {
-        console.log("class 4 to 5");
+        // console.log("class 4 to 5");
         TotalResult = ResultForClass4To5(
           results,
           resultGrading,
@@ -394,7 +426,229 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+const getMarksheet = asyncHandler(async (req, res) => {
+  try {
+    // console.log("req.body", req.body);
+    const {
+      session,
+      term,
+      className,
+      section,
+      shift,
+      start_roll,
+      end_roll,
+      is_merged,
+      group,
+    } = req.body;
+    const TebulationSheet = [];
+    const students = await Student.find({
+      class: className,
+      section,
+      shift,
+      year: session,
+      group: group,
+      roll: { $gte: start_roll, $lte: end_roll },
+    }).sort({ roll: 1 });
+    // console.log("students", students);
+    for (const student of students) {
+      const results = await Result.find({
+        session,
+        term,
+        className,
+        section,
+        shift,
+        studentId: student.studentId,
+      });
+      //subject vs full marks hash data
+      const subjectVsFullMarks = {
+        Bangla1st: 100,
+        Bangla2nd: 100,
+        English1st: 100,
+        English2nd: 100,
+        Bangla: 100,
+        English: 100,
+        Mathematics: 100,
+        Science: 100,
+        "Digital technology": 100,
+        "Life and livelihood": 100,
+        "Art and culture": 100,
+        "Well being": 100,
+        "History and social science": 100,
+        "Bangladesh And Global Studies": 100,
+        "Islam and Moral Education": 100,
+        "Religious Education": 100,
+        Physics: 100,
+        Chemistry: 100,
+        Highermath: 100,
+        Biology: 100,
+        ICT: 50,
+      };
+      const resultGrading = {
+        "A+": 5.0,
+        A: 4.0,
+        "A-": 3.5,
+        B: 3.0,
+        C: 2.0,
+        D: 1.0,
+        F: 0.0,
+      };
+      if (is_merged) {
+        // console.log("is_merged");
+        // Get both half yearly and annual results
+        const halfYearlyResults = await Result.find({
+          session,
+          term: "Half Yearly",
+          className,
+          section,
+          shift,
+          studentId: student.studentId,
+        });
+        // console.log("halfYearlyResults", halfYearlyResults);
+        const annualResults = await Result.find({
+          session,
+          term: "Annual",
+          className,
+          section,
+          shift,
+          studentId: student.studentId,
+        });
+        //subjectWiseHighestMarks
+        const halfYearlySubjectWiseHighestMarks =
+          await GetSubjectWiseHighestMarksAbove5(
+            session,
+            "Half Yearly",
+            className,
+            section,
+            shift
+          );
+        const annualSubjectWiseHighestMarks =
+          await GetSubjectWiseHighestMarksAbove5(
+            session,
+            "Annual",
+            className,
+            section,
+            shift
+          );
+        let halfYearlyProcessed;
+        let annualProcessed;
+        let TotalResult;
+        if (className >= 4 && className <= 5) {
+          halfYearlyProcessed = ResultForClass4To5(
+            halfYearlyResults,
+            resultGrading,
+            subjectVsFullMarks
+          );
+          annualProcessed = ResultForClass4To5(
+            annualResults,
+            resultGrading,
+            subjectVsFullMarks
+          );
+          TotalResult = calculateFinalMergedResult(
+            halfYearlyProcessed,
+            annualProcessed
+          );
+        } else if (className >= 6 && className <= 8) {
+          halfYearlyProcessed = ResultForClass6to8(
+            halfYearlyResults,
+            resultGrading,
+            subjectVsFullMarks
+          );
+          annualProcessed = ResultForClass6to8(
+            annualResults,
+            resultGrading,
+            subjectVsFullMarks
+          );
+          TotalResult = calculateFinalMergedResult(
+            halfYearlyProcessed,
+            annualProcessed
+          );
+        } else if (className >= 9) {
+          // console.log("class 9");
+          halfYearlyProcessed = ResultForClass9AndAbove(
+            halfYearlyResults,
+            resultGrading,
+            subjectVsFullMarks,
+            halfYearlySubjectWiseHighestMarks
+          );
+          // console.log("halfYearlyProcessed", halfYearlyProcessed);
+          annualProcessed = ResultForClass9AndAbove(
+            annualResults,
+            resultGrading,
+            subjectVsFullMarks,
+            annualSubjectWiseHighestMarks
+          );
+          // console.log("annualProcessed", annualProcessed);
+          TotalResult = calculateFinalMergedResult(
+            halfYearlyProcessed,
+            annualProcessed,
+            resultGrading
+          );
+          // console.log("TotalResult", TotalResult);
+        }
 
+        // Calculate summary using the new function
+        const summary = await calculateResultSummary(
+          TotalResult,
+          className,
+          section,
+          shift
+        );
+
+        TebulationSheet.push({
+          studentInfo: student,
+          halfYearlyResults: halfYearlyProcessed,
+          annualResults: annualProcessed,
+          TotalResult,
+          summary,
+        });
+      } else {
+        let TotalResult;
+        //there is 3 type of reuslt class 4 to 5, class 6 to 8 and class 9
+        if (className >= 4 && className <= 5) {
+          // console.log("class 4 to 5");
+          TotalResult = ResultForClass4To5(
+            results,
+            resultGrading,
+            subjectVsFullMarks
+          );
+          //here will be logic
+        } else if (className >= 6 && className <= 8) {
+          TotalResult = ResultForClass6to8(
+            results,
+            resultGrading,
+            subjectVsFullMarks
+          );
+          //here will be logic
+        } else if (className == 9) {
+          TotalResult = ResultForClass9AndAbove(
+            results,
+            resultGrading,
+            subjectVsFullMarks
+          );
+          //here will be logic
+        }
+        // Calculate summary using the new function
+        const summary = await calculateResultSummary(
+          TotalResult,
+          className,
+          section,
+          shift
+        );
+        TebulationSheet.push({
+          studentInfo: student,
+          TotalResult,
+          summary,
+        });
+      }
+    }
+    res.status(200).json({
+      Message: "Tebulation sheet fetched successfully",
+      Data: TebulationSheet,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 function calculateGrade(totalMarks) {
   if (totalMarks >= 80) return "A+";
   if (totalMarks >= 70) return "A";
@@ -455,7 +709,15 @@ function ResultForClass9AndAbove(
     const { subjectName, subjective, objective, classAssignment, practical } =
       result;
     const rawMarks70 =
-      ((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7;
+      Math.abs(
+        (((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7) % 1
+      ) >= 0.05
+        ? Math.round(
+            ((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7
+          )
+        : Math.floor(
+            ((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7
+          );
     const totalRawMarks = rawMarks70 + (classAssignment ?? 18);
     const subjectWiseResult = {
       subject: subjectName,
@@ -463,10 +725,7 @@ function ResultForClass9AndAbove(
       subjective: subjective ?? 0,
       objective: objective ?? 0,
       practical: practical ?? 0,
-      "70%":
-        Math.abs(rawMarks70 % 1) >= 0.05
-          ? Math.round(rawMarks70)
-          : Math.floor(rawMarks70),
+      "70%": rawMarks70,
       "CA(30%)": classAssignment ?? 18,
       totalMarks:
         Math.abs(totalRawMarks % 1) >= 0.05
@@ -562,6 +821,86 @@ async function GetSubjectWiseHighestMarks(
   }
   return SubjectWiseHighestMarks;
 }
+async function GetSubjectWiseHighestMarksAbove5(
+  session,
+  term,
+  className,
+  section,
+  shift
+) {
+  const results = await Result.find({
+    session,
+    term,
+    className,
+    section,
+    shift,
+  });
+  const SubjectWiseHighestMarks = {};
+  for (const result of results) {
+    const { subjectName, subjective, objective, practical, classAssignment } =
+      result;
+    const rawMarks70 =
+      Math.abs(
+        (((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7) % 1
+      ) >= 0.05
+        ? Math.round(
+            ((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7
+          )
+        : Math.floor(
+            ((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7
+          );
+    const totalMarks = rawMarks70 + (classAssignment ?? 18);
+
+    SubjectWiseHighestMarks[subjectName] = SubjectWiseHighestMarks[subjectName]
+      ? SubjectWiseHighestMarks[subjectName] < totalMarks
+        ? totalMarks
+        : SubjectWiseHighestMarks[subjectName]
+      : totalMarks;
+  }
+  return SubjectWiseHighestMarks;
+}
+
+// Add this new helper function
+function calculateFinalMergedResult(
+  halfYearlyResults,
+  annualResults,
+  resultGrading
+) {
+  const mergedResults = [];
+
+  // Combine results for each subject
+  halfYearlyResults.forEach((halfYearlySubject) => {
+    const annualSubject = annualResults.find(
+      (annual) => annual.subject === halfYearlySubject.subject
+    );
+
+    if (annualSubject) {
+      // Calculate 50% of each component
+      const halfYearlyWeight = halfYearlySubject.totalMarks * 0.5;
+      const annualWeight = annualSubject.totalMarks * 0.5;
+      const totalMarks = halfYearlyWeight + annualWeight;
+
+      mergedResults.push({
+        subject: halfYearlySubject.subject,
+        fullMarks: halfYearlySubject.fullMarks,
+        subjective:
+          (halfYearlySubject.subjective + annualSubject.subjective) / 2,
+        objective: (halfYearlySubject.objective + annualSubject.objective) / 2,
+        practical: (halfYearlySubject.practical + annualSubject.practical) / 2,
+        "70%": (halfYearlySubject["70%"] + annualSubject["70%"]) / 2,
+        "CA(30%)": (halfYearlySubject["CA(30%)"] + annualSubject["CA(30%"]) / 2,
+        totalMarks: Math.round(totalMarks),
+        grade: calculateGrade(Math.round(totalMarks)),
+        GP: resultGrading[calculateGrade(Math.round(totalMarks))],
+        Highest: Math.max(halfYearlySubject.Highest, annualSubject.Highest),
+        halfYearlyMarks: halfYearlySubject.totalMarks,
+        annualMarks: annualSubject.totalMarks,
+      });
+    }
+  });
+
+  return mergedResults;
+}
 
 const deleteManyResult = asyncHandler(async(req,res)=>{
   try {
@@ -594,5 +933,6 @@ module.exports = {
   updateResult,
   deleteResult,
   getTebulationSheet,
-  deleteManyResult
+  deleteManyResult,
+  getMarksheet,
 };

@@ -10,6 +10,7 @@ const {
   deleteResult,
   getTebulationSheet,
   deleteManyResult,
+  getMarksheet,
 } = require("../controllers/resultController");
 
 // Configure multer storage
@@ -47,6 +48,7 @@ router.delete("/result/delete/:id", deleteResult);
 //want to make a route for bulk upload of results
 router.post("/result/bulk-upload", upload.single("file"), bulkUploadResults);
 router.post("/result/individual", getIndividualResult);
+router.post("/result/marksheet", getMarksheet);
 router.post("/result/tebulation-sheet", getTebulationSheet);
 router.post('/delete-many-result',deleteManyResult)
 

@@ -231,6 +231,38 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+//student promotion from one class to another class multiple student
+const studentPromotion = asyncHandler(async (req, res) => {
+  try {
+    const { promotedStudent } = req.body;
+    if (!promotedStudent || !Array.isArray(promotedStudent)) {
+      return res.status(400).json({ message: "Invalid input format" });
+    }
+
+    const updatePromises = promotedStudent.map(async (student) => {
+      const { id, class: className, section, shift, roll } = student;
+      return Student.findByIdAndUpdate(
+        id,
+        {
+          class: className,
+          section,
+          shift, 
+          roll
+        },
+        { new: true }
+      );
+    });
+
+    const updatedStudents = await Promise.all(updatePromises);
+
+    res.json({
+      message: "Students promoted successfully",
+      data: updatedStudents
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 const studentDeleteMany = asyncHandler(async(req,res)=>{
   try {
@@ -263,5 +295,7 @@ module.exports = {
   deleteStudent,
   bulkUploadStudents,
   getStudentByRollRange,
-  studentDeleteMany
+  studentDeleteMany,
+  studentPromotion
+
 };

@@ -129,6 +129,36 @@ const resultDocs = {
         }
       }
     },
+    "/result/get_all": {
+      get: {
+        tags: ["Result"],
+        summary: "Get all result",
+        description: "Get all result",
+        security: [
+          {
+            "Bearer": []
+          }
+        ],
+        responses: {
+          200: {
+            description: "Result fetched successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Result fetched successfully"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/result/bulk-upload": {
       post: {
         tags: ["Result"],
@@ -299,6 +329,130 @@ const resultDocs = {
                   }
                 },
                 required: ["session", "term", "className", "section", "shift", "studentId"]
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: "Successful operation",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    studentInfo: {
+                      type: "object"
+                    },
+                    results: {
+                      type: "array",
+                      items: {
+                        type: "object"
+                      }
+                    },
+                    summary: {
+                      type: "object",
+                      properties: {
+                        totalMarks: {
+                          type: "number"
+                        },
+                        obtainedMarks: {
+                          type: "number"
+                        },
+                        studentsCount: {
+                          type: "number"
+                        },
+                        gpaWithout4th: {
+                          type: "number"
+                        },
+                        gpa: {
+                          type: "number"
+                        },
+                        remark: {
+                          type: "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          404: {
+            description: "Result not found",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Result not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    ,
+    "/result/marksheet": {
+      post: {
+        tags: ["Result"],
+        summary: "Get marksheet for a class",
+        description: "Retrieve marksheet for a specific class",
+        security: [
+          {
+            "Bearer": []
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  session: {
+                    type: "string",
+                    example: "2024"
+                  },
+                  term: {
+                    type: "string",
+                    example: "Annual"
+                  },
+                  className: {
+                    type: "string",
+                    example: "9"
+                  },
+                  section: {
+                    type: "string",
+                    example: "A"
+                  },
+                  shift: {
+                    type: "string",
+                    example: "Morning"
+                  },
+                  group: {
+                    type: "string",
+                    example: "General"
+                  },
+                  is_merged: {
+                    type: "boolean",
+                    example: "true"
+                  },
+                  start_roll: {
+                    type: "string",
+                    example: "1"
+                  },
+                  end_roll: {
+                    type: "string",
+                    example: "2"
+                  }
+                },
+                required: ["session", "term", "className", "section", "shift", "start_roll", "end_roll"]
               }
             }
           }
