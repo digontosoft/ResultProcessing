@@ -902,6 +902,29 @@ function calculateFinalMergedResult(
   return mergedResults;
 }
 
+const deleteManyResult = asyncHandler(async(req,res)=>{
+  try {
+    const {ids} = req.body
+    //const validIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id));
+    
+    if (ids.length === 0) {
+      return res.status(400).json({ message: 'No IDs provided' });
+    }
+    
+    const result = await Result.deleteMany({
+      _id: { $in: ids }
+    });
+    res.status(200).json({
+      message: `${result.deletedCount} items deleted successfully`
+    });
+
+  } catch (error) {
+    console.log(error);
+    
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+})
+
 module.exports = {
   createResult,
   bulkUploadResults,
@@ -910,5 +933,6 @@ module.exports = {
   updateResult,
   deleteResult,
   getTebulationSheet,
+  deleteManyResult,
   getMarksheet,
 };

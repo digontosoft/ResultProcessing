@@ -10,7 +10,9 @@ const {
   addStudentData,
   bulkUploadStudents,
   getStudentByRollRange,
+  studentDeleteMany,
   studentPromotion
+
 } = require("../controllers/studentController");
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -51,5 +53,7 @@ router
   .get(protect, getStudentById)
   .put(protect, updateStudent)
   .delete(protect, deleteStudent);
+
+router.route('/student/many-delete').post(protect,studentDeleteMany)
 router.post("/student/bulk-upload", upload.single("file"), bulkUploadStudents);
 module.exports = router;
