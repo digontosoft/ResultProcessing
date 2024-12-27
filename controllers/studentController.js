@@ -189,9 +189,10 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
     if (religion) {
       query.religion = religion;
     }
-    console.log(query);
+    // console.log(query);
 
-    const students = await Student.find(query);
+    const students = await Student.find(query).sort({ roll: 1 });
+    // console.log("students", students);
     // now get result for this subject,class,shift,section,session,term
     // console.log("subject",name)
     const results = await Result.find({
@@ -203,19 +204,6 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
       term,
     });
 
-    console.log("query", {
-      subjectName: subject,
-      className: name,
-      shift,
-      section,
-      session,
-      term,
-    });
-
-    console.log("students", students);
-
-    console.log("results", results);
-    //console.log(st);
 
     //i will only return those students who are not in results
     const studentsNotInResults = students.filter(
