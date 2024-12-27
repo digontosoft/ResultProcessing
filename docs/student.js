@@ -2,6 +2,74 @@
 
 const studentDocs = {
   paths: {
+    "/student-promotion":{
+      post:{
+        tags: ["Student"],
+        summary: "Student promotion",
+        description: "Student promotion",
+        security: [
+          {
+            Bearer: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  promotedStudent: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        id: {
+                          type: "string",
+                          example: "676d86c520d17b6ce6deefdf"
+                        },
+                        class: {
+                          type: "string",
+                          example: "8"
+                        },
+                        section: {
+                          type: "string",
+                          example: "A"
+                        },
+                        shift: {
+                          type: "string",
+                          example: "Morning"
+                        },
+                        roll: {
+                          type: "number",
+                          example: 4
+                        }
+                      }
+                    }
+                  },
+                  
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Students promoted successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: { type: "array", items: { type: "object" } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     "/get-student-by-roll-range": {
       post: {
         tags: ["Student"],
