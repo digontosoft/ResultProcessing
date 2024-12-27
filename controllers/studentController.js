@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Student = require("../models/studentModel");
 const Result = require("../models/resultModel");
+const { log } = require("console");
 
 // add student data
 const addStudentData = asyncHandler(async (req, res) => {
@@ -189,9 +190,10 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
     if (religion) {
       query.religion = religion;
     }
-    console.log(query);
+    // console.log(query);
 
-    const students = await Student.find(query);
+    const students = await Student.find(query).sort({ roll: 1 });
+    // console.log("students", students);
     // now get result for this subject,class,shift,section,session,term
     // console.log("subject",name)
     const results = await Result.find({
@@ -203,19 +205,6 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
       term,
     });
 
-    console.log("query", {
-      subjectName: subject,
-      className: name,
-      shift,
-      section,
-      session,
-      term,
-    });
-
-    console.log("students", students);
-
-    console.log("results", results);
-    //console.log(st);
 
     //i will only return those students who are not in results
     const studentsNotInResults = students.filter(
@@ -230,6 +219,61 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+//student promotion from one class to another class multiple student
+const studentPromotion = asyncHandler(async (req, res) => {
+  try {
+    const { promotedStudent } = req.body;
+    if (!promotedStudent || !Array.isArray(promotedStudent)) {
+      return res.status(400).json({ message: "Invalid input format" });
+    }
+
+    const updatePromises = promotedStudent.map(async (student) => {
+      const { id, class: className, section, shift, roll } = student;
+      return Student.findByIdAndUpdate(
+        id,
+        {
+          class: className,
+          section,
+          shift, 
+          roll
+        },
+        { new: true }
+      );
+    });
+
+    const updatedStudents = await Promise.all(updatePromises);
+
+    res.json({
+      message: "Students promoted successfully",
+      data: updatedStudents
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+const studentDeleteMany = asyncHandler(async(req,res)=>{
+  try {
+    const {ids} = req.body
+    //const validIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id));
+    
+    if (ids.length === 0) {
+      return res.status(400).json({ message: 'No IDs provided' });
+    }
+    
+    const result = await Student.deleteMany({
+      _id: { $in: ids }
+    });
+    res.status(200).json({
+      message: `${result.deletedCount} items deleted successfully`
+    });
+
+  } catch (error) {
+    console.log(error);
+    
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+})
 
 module.exports = {
   addStudentData,
@@ -239,4 +283,7 @@ module.exports = {
   deleteStudent,
   bulkUploadStudents,
   getStudentByRollRange,
+  studentDeleteMany,
+  studentPromotion
+
 };

@@ -9,6 +9,7 @@ const {
   updateResult,
   deleteResult,
   getTebulationSheet,
+  deleteManyResult,
   getMarksheet,
 } = require("../controllers/resultController");
 
@@ -49,5 +50,6 @@ router.post("/result/bulk-upload", upload.single("file"), bulkUploadResults);
 router.post("/result/individual", getIndividualResult);
 router.post("/result/marksheet", getMarksheet);
 router.post("/result/tebulation-sheet", getTebulationSheet);
+router.post('/delete-many-result',deleteManyResult)
 
 module.exports = router;
