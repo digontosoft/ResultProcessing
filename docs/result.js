@@ -129,6 +129,36 @@ const resultDocs = {
         }
       }
     },
+    "/result/get_all": {
+      get: {
+        tags: ["Result"],
+        summary: "Get all result",
+        description: "Get all result",
+        security: [
+          {
+            "Bearer": []
+          }
+        ],
+        responses: {
+          200: {
+            description: "Result fetched successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Result fetched successfully"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/result/bulk-upload": {
       post: {
         tags: ["Result"],
