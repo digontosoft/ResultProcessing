@@ -1062,7 +1062,7 @@ const getMeritList = asyncHandler(async(req, res) => {
       ...query,
       group,
       year: session
-    }).sort({ roll: 1 }).limit(10);
+    }).sort({ roll: 1 });
 
     const meritList = [];
     const subjectVsFullMarks = {
@@ -1200,6 +1200,161 @@ const getMeritList = asyncHandler(async(req, res) => {
     });
   }
 });
+const getFailList = asyncHandler(async(req, res) => {
+  console.log("getFailList");
+  try {
+    const { session, term, className, section, shift, group, is_merged } = req.body;
+    
+    // Build query based on provided filters
+    let query = { };
+    if (shift !== "All") query.shift = shift;
+    if (section !== "All") query.section = section;
+    console.log("query", query);
+    // Get all students matching the criteria
+    const students = await Student.find(query).sort({ roll: 1 });
+    console.log("students", students.length);
+    const failList = [];
+    const subjectVsFullMarks = {
+      Mathmetics: 100,
+      Bangla: 100,
+      English: 100,
+      Mathematics: 100,
+      Science: 100,
+      "Bangladesh and Global Studies": 100,
+      "Islam and Moral Education": 100,
+      "Hindu and Moral Education": 100,
+      "Christian and Moral Education": 100,
+      "Digital technology": 100,
+      "Life and livelihood": 100,
+      "Art and culture": 100,
+      "Well being": 100,
+      "History and social science": 100,
+    };
+
+    const resultGrading = {
+      "A+": 5.0, A: 4.0, "A-": 3.5, B: 3.0, C: 2.0, D: 1.0, F: 0.0,
+    };
+
+    // Process each student
+    for (const student of students) {
+      let results;
+      let processedResults;
+
+      if (is_merged) {
+        // Get both half yearly and annual results
+        const halfYearlyResults = await Result.find({
+          session,
+          term: "Half Yearly",
+          className,
+          studentId: student.studentId,
+          ...query
+        });
+
+        const annualResults = await Result.find({
+          session,
+          term: "Annual",
+          className,
+          studentId: student.studentId,
+          ...query
+        });
+
+        // Process and merge results
+        const halfYearlyProcessed = ResultForClass9AndAbove(
+          halfYearlyResults,
+          resultGrading,
+          subjectVsFullMarks
+        );
+        const annualProcessed = ResultForClass9AndAbove(
+          annualResults,
+          resultGrading,
+          subjectVsFullMarks
+        );
+        processedResults = calculateFinalMergedResult(
+          halfYearlyProcessed,
+          annualProcessed,
+          resultGrading
+        );
+      } else {
+        console.log("not merged", student.studentId);
+        // Get regular term results
+        results = await Result.find({
+          session,
+          term,
+          className,
+          studentId: student.studentId,
+          ...query
+        });
+        console.log("results", results.length);
+        processedResults = ResultForClass9AndAbove(
+          results,
+          resultGrading,
+          subjectVsFullMarks
+        );
+      }
+
+      // Check for failed subjects
+      const failedSubjects = [];
+      
+      for (const result of results) {
+        const { 
+          subjectName, 
+          subjective = 0, 
+          objective = 0, 
+          practical = 0, 
+          classAssignment = 0 
+        } = result;
+
+        // Define failure conditions
+        const isSubjectiveFail = subjective < 33;
+        const isCAFail = classAssignment < 10;
+        // console.log(subjective, "---", classAssignment);
+        const totalMarks = subjective + objective + practical;
+
+        if (isSubjectiveFail || isCAFail) {
+          // console.log("fais");
+          failedSubjects.push({
+            "Subject Code": subjectName.substring(0, 4).toUpperCase(),
+            "Subject Name": subjectName,
+            "Subjective": subjective,
+            "Objective": objective,
+            "Practical": practical,
+            "Total": totalMarks,
+            "Fail": [
+              ...(isSubjectiveFail ? ["subjective"] : []),
+              ...(isCAFail ? ["classAssignment"] : [])
+            ].join(", ")
+          });
+        }
+      }
+      // console.log("failedSubjects", failedSubjects);
+
+      // Only add student to fail list if they have failed subjects
+      if (failedSubjects.length > 0) {
+        failList.push({
+          "Student's ID": student.studentId,
+          "Roll No": student.roll,
+          "Student's Name": student.studentName,
+          "Subject Results": failedSubjects
+        });
+      }
+    }
+  //  console.log("final faillist", failList);
+    // Sort fail list by roll number
+    failList.sort((a, b) => a["Roll No"] - b["Roll No"]);
+
+    res.status(200).json({
+      message: "Fail list generated successfully",
+      data: failList
+    });
+
+  } catch (error) {
+    console.error("Error in getFailList:", error);
+    res.status(500).json({ 
+      message: "Error generating fail list",
+      error: error.message 
+    });
+  }
+});
 
 module.exports = {
   createResult,
@@ -1211,5 +1366,6 @@ module.exports = {
   getTebulationSheet,
   deleteManyResult,
   getMarksheet,
-  getMeritList
+  getMeritList,
+  getFailList
 };

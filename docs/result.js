@@ -749,7 +749,136 @@ const resultDocs = {
           }
         }
       }
-    } 
+    } ,
+    "/result/fail-list": {
+      post: {
+        tags: ["Result"],
+        summary: "Get fail list for a class",
+        description: "Retrieve fail list for a specific class",
+        security: [
+          {
+            "Bearer": []
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  session: {
+                    type: "string",
+                    example: "2024",
+                    description: "Academic session year"
+                  },
+                  term: {
+                    type: "string", 
+                    example: "Annual",
+                    description: "Academic term (Half Yearly/Annual)"
+                  },
+                  className: {
+                    type: "string",
+                    example: "9",
+                    description: "Class/grade level"
+                  },
+                  section: {
+                    type: "string",
+                    example: "A",
+                    description: "Class section"
+                  },
+                  shift: {
+                    type: "string",
+                    example: "Morning",
+                    description: "School shift"
+                  },
+                  group: {
+                    type: "string",
+                    example: "General",
+                    description: "Student group/stream"
+                  },
+                  is_merged: {
+                    type: "boolean",
+                    example: true,
+                    description: "Whether to merge Half Yearly and Annual results"
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: "Fail list fetched successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Fail list fetched successfully"
+                    },
+                    data: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          studentId: {
+                            type: "string",
+                            example: "1001"
+                          },
+                          studentName: {
+                            type: "string",
+                            example: "John Doe"
+                          },
+                          failedSubjects: {
+                            type: "array",
+                            items: {
+                              type: "object",
+                              properties: {
+                                subjectName: {
+                                  type: "string",
+                                  example: "Mathematics"
+                                },
+                                marks: {
+                                  type: "number",
+                                  example: 28
+                                },
+                                passingMarks: {
+                                  type: "number",
+                                  example: 33
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          404: {
+            description: "No fail list found",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "No fail list found for the given criteria"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 };
 
