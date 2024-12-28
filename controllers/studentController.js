@@ -275,6 +275,27 @@ const studentDeleteMany = asyncHandler(async(req,res)=>{
   }
 })
 
+const getStudentList = asyncHandler(async(req,res)=>{
+  try {
+    const {year,class:className,section,shift,group, startRoll,endRoll} = req.body
+    const query = {
+      year,
+      class:className,
+      section,
+      shift,
+      group,
+      roll:{$gte:startRoll,$lte:endRoll}
+    }
+    const students = await Student.find(query)
+    res.status(200).json({
+      message: "Student list fetched successfully",
+      data: students
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+})
+
 module.exports = {
   addStudentData,
   getAllStudent,
@@ -284,6 +305,7 @@ module.exports = {
   bulkUploadStudents,
   getStudentByRollRange,
   studentDeleteMany,
-  studentPromotion
+  studentPromotion,
+  getStudentList
 
 };

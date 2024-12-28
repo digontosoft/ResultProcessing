@@ -121,6 +121,53 @@ const studentDocs = {
         },
       },
     },
+    "/get-student-list":{
+      post:{
+        tags:["Student"],
+        summary:"Get student list",
+        description:"Get student list",
+        security:[
+          {
+            Bearer:[]
+          }
+        ]
+        ,
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  startRoll: { type: "number", example: 1 },
+                  endRoll: { type: "number", example: 20 },
+                  class: { type: "string", example: "4" },
+                  section: { type: "string", example: "A" },
+                  shift: { type: "string", example: "Morning" },
+                  group: { type: "string", example: "General" },
+                  year: { type: "string", example: "2024" }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: "Students fetched successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: { type: "array", items: { type: "object" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   },
 };
 

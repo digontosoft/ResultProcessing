@@ -11,6 +11,8 @@ const {
   getTebulationSheet,
   deleteManyResult,
   getMarksheet,
+  getMeritList,
+  getFailList
 } = require("../controllers/resultController");
 
 // Configure multer storage
@@ -50,6 +52,8 @@ router.post("/result/bulk-upload", upload.single("file"), bulkUploadResults);
 router.post("/result/individual", getIndividualResult);
 router.post("/result/marksheet", getMarksheet);
 router.post("/result/tebulation-sheet", getTebulationSheet);
+router.post("/result/merit-list", getMeritList);
+router.post("/result/fail-list", getFailList);
 router.post('/delete-many-result',deleteManyResult)
 
 module.exports = router;
