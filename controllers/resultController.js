@@ -385,7 +385,7 @@ const getIndividualResult = asyncHandler(async (req, res) => {
 
 const getTebulationSheet = asyncHandler(async (req, res) => {
   try {
-    const { session, term, className, section, shift,group } = req.body;
+    const { session, term, className, section, shift, group } = req.body;
     const TebulationSheet = [];
     const students = await Student.find({
       class: className,
@@ -407,7 +407,6 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
       section,
       shift
     );
-    // console.log("students", students);
     for (const student of students) {
       const results = await Result.find({
         session,
@@ -462,7 +461,6 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
       let TotalResult;
       //there is 3 type of reuslt class 4 to 5, class 6 to 8 and class 9
       if (className >= 4 && className <= 5) {
-        // console.log("class 4 to 5");
         TotalResult = ResultForClass4To5(
           results,
           resultGrading,
@@ -500,6 +498,22 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
         summary,
       });
     }
+    // After calculating results for all students, sort by GPA and total marks
+    TebulationSheet.sort((a, b) => {
+      // First compare by GPA
+      if (b.summary.gpa !== a.summary.gpa) {
+        return b.summary.gpa - a.summary.gpa;
+      }
+      // If GPAs are equal, compare by total obtained marks
+      return b.summary.obtainedMarks - a.summary.obtainedMarks;
+    });
+
+    // Add merit position to each student's data
+    TebulationSheet.forEach((result, index) => {
+      result.meritPosition = index + 1;
+    });
+    //sort by roll
+    TebulationSheet.sort((a, b) => a.studentInfo.roll - b.studentInfo.roll);
     res.status(200).json({
       Message: "Tebulation sheet fetched successfully",
       Data: TebulationSheet,
