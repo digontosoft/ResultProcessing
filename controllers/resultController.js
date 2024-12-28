@@ -558,27 +558,6 @@ const getMarksheet = asyncHandler(async (req, res) => {
       });
       //subject vs full marks hash data
       const subjectVsFullMarks = {
-        // Bangla1st: 100,
-        // Bangla2nd: 100,
-        // English1st: 100,
-        // English2nd: 100,
-        // Bangla: 100,
-        // English: 100,
-        // Mathematics: 100,
-        // Science: 100,
-        // "Digital technology": 100,
-        // "Life and livelihood": 100,
-        // "Art and culture": 100,
-        // "Well being": 100,
-        // "History and social science": 100,
-        // "Bangladesh And Global Studies": 100,
-        // "Islam and Moral Education": 100,
-        // "Religious Education": 100,
-        // Physics: 100,
-        // Chemistry: 100,
-        // Highermath: 100,
-        // Biology: 100,
-        // ICT: 50,
         Mathmetics:100, 
         Bangla:100,
         English:100,
@@ -817,6 +796,13 @@ function ResultForClass9AndAbove(
   SubjectWiseHighestMarks
 ) {
   const TotalResult = [];
+   // Normalize the keys in subjectVsFullMarks
+   const normalizedSubjectMarks = Object.fromEntries(
+    Object.entries(subjectVsFullMarks).map(([key, value]) => [
+      key.trim().replace(/\s+/g, ' '),
+      value
+    ])
+  );
   for (const result of results) {
     const { subjectName, subjective, objective, classAssignment, practical } = result;
     
@@ -824,7 +810,8 @@ function ResultForClass9AndAbove(
     const isFailedDueToSubjective = (subjective ?? 0) < 33;
     const isFailedDueToCA = (classAssignment ?? 0) < 10;
     const isFailed = isFailedDueToSubjective || isFailedDueToCA;
-
+    const normalizedSubjectName = subjectName.trim().replace(/\s+/g, ' ');
+    const fullMarks = normalizedSubjectMarks[normalizedSubjectName];
     const rawMarks70 = Math.abs(
       (((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7) % 1
     ) >= 0.05
@@ -835,7 +822,7 @@ function ResultForClass9AndAbove(
 
     const subjectWiseResult = {
       subject: subjectName,
-      fullMarks: subjectVsFullMarks[subjectName],
+      fullMarks: fullMarks,
       subjective: subjective ?? 0,
       objective: objective ?? 0,
       practical: practical ?? 0,
@@ -870,24 +857,39 @@ function ResultForClass6to8(
   SubjectWiseHighestMarks
 ) {
   const TotalResult = [];
-  for (const result of results) {
-    const { subjectName, subjective, objective, classAssignment, practical } =
-      result;
-   // Check failing conditions first
-   const isFailedDueToSubjective = (subjective ?? 0) < 33;
-   const isFailedDueToCA = (classAssignment ?? 0) < 10;
-   const isFailed = isFailedDueToSubjective || isFailedDueToCA;
+  
+  // Normalize the keys in subjectVsFullMarks
+  const normalizedSubjectMarks = Object.fromEntries(
+    Object.entries(subjectVsFullMarks).map(([key, value]) => [
+      key.trim().replace(/\s+/g, ' '),
+      value
+    ])
+  );
 
-   const rawMarks70 = Math.abs(
-     (((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7) % 1
-   ) >= 0.05
-     ? Math.round(((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7)
-     : Math.floor(((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7);
-   
-   const totalRawMarks = rawMarks70 + (classAssignment ?? 18);
-    const subjectWiseResult = {
+  for (const result of results) {
+    const { subjectName, subjective, objective, classAssignment, practical } = result;
+    
+    // Normalize the incoming subject name
+    const normalizedSubjectName = subjectName.trim().replace(/\s+/g, ' ');
+    
+    // Use normalized strings for comparison
+    const fullMarks = normalizedSubjectMarks[normalizedSubjectName];
+
+    // Check failing conditions first
+    const isFailedDueToSubjective = (subjective ?? 0) < 33;
+    const isFailedDueToCA = (classAssignment ?? 0) < 10;
+    const isFailed = isFailedDueToSubjective || isFailedDueToCA;
+
+    const rawMarks70 = Math.abs(
+      (((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7) % 1
+    ) >= 0.05
+      ? Math.round(((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7)
+      : Math.floor(((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7);
+    
+    const totalRawMarks = rawMarks70 + (classAssignment ?? 18);
+     const subjectWiseResult = {
       subject: subjectName,
-      fullMarks: subjectVsFullMarks[subjectName],
+      fullMarks: fullMarks,
       subjective: subjective ?? 0,
       objective: objective ?? 0,
       practical: practical ?? 0,
