@@ -1043,14 +1043,165 @@ const deleteManyResult = asyncHandler(async(req,res)=>{
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 })
-const getMeritList = asyncHandler(async(req,res)=>{
-  const {session,term,className,section,shift} = req.body
-  const results = await Result.find({session,term,className,section,shift})
-  res.status(200).json({
-    message: "Merit list fetched successfully",
-    data: results
-  })
-})
+const getMeritList = asyncHandler(async(req, res) => {
+  try {
+    const { session, term, className, section, shift, group, is_merged } = req.body;
+    //if shif is All or section is All then shift and section is not required in query
+    let query = {}
+    if(shift !== "All"){
+      query.shift = shift
+    }
+    if(section !== "All"){
+      query.section = section
+    }
+ 
+    
+    // Get all students matching the criteria
+    const students = await Student.find({
+      class: className,
+      ...query,
+      group,
+      year: session
+    }).sort({ roll: 1 }).limit(10);
+
+    const meritList = [];
+    const subjectVsFullMarks = {
+      Mathmetics: 100,
+      Bangla: 100,
+      English: 100,
+      Mathematics: 100,
+      Science: 100,
+      "Bangladesh and Global Studies": 100,
+      "Islam and Moral Education": 100,
+      "Hindu and Moral Education": 100,
+      "Christian and Moral Education": 100,
+      "Digital technology": 100,
+      "Life and livelihood": 100,
+      "Art and culture": 100,
+      "Well being": 100,
+      "History and social science": 100,
+    };
+
+    const resultGrading = {
+      "A+": 5.0,
+      A: 4.0,
+      "A-": 3.5,
+      B: 3.0,
+      C: 2.0,
+      D: 1.0,
+      F: 0.0,
+    };
+
+    // Process each student
+    for (const student of students) {
+      let results;
+      let processedResults;
+      let summary;
+
+      if (is_merged) {
+        // Get both half yearly and annual results
+        const halfYearlyResults = await Result.find({
+          session,
+          term: "Half Yearly",
+          className,
+          section,
+          shift,
+          studentId: student.studentId,
+        });
+
+        const annualResults = await Result.find({
+          session,
+          term: "Annual",
+          className,
+          section,
+          shift,
+          studentId: student.studentId,
+        });
+
+        // Process results based on class
+        const halfYearlyProcessed = ResultForClass9AndAbove(
+          halfYearlyResults,
+          resultGrading,
+          subjectVsFullMarks
+        );
+
+        const annualProcessed = ResultForClass9AndAbove(
+          annualResults,
+          resultGrading,
+          subjectVsFullMarks
+        );
+
+        processedResults = calculateFinalMergedResult(
+          halfYearlyProcessed,
+          annualProcessed,
+          resultGrading
+        );
+      } else {
+        results = await Result.find({
+          session,
+          term,
+          className,
+          section,
+          shift,
+          studentId: student.studentId,
+        });
+
+        processedResults = ResultForClass9AndAbove(
+          results,
+          resultGrading,
+          subjectVsFullMarks
+        );
+      }
+
+      summary = await calculateResultSummary(
+        processedResults,
+        className,
+        section,
+        shift
+      );
+
+      // Count failed subjects
+      const noOfFail = processedResults.filter(result => result.grade === "F").length;
+
+      meritList.push({
+        serial: 0, // Will be set after sorting
+        merit: 0, // Will be set after sorting
+        name: student.studentName,
+        roll: student.roll,
+        section: student.section,
+        noOfFail,
+        gpa: summary.gpa,
+        total: summary.obtainedMarks
+      });
+    }
+
+    // Sort by GPA (descending) and total marks (descending)
+    meritList.sort((a, b) => {
+      if (b.gpa !== a.gpa) {
+        return b.gpa - a.gpa;
+      }
+      return b.total - a.total;
+    });
+
+    // Add serial and merit numbers
+    meritList.forEach((student, index) => {
+      student.serial = index + 1;
+      student.merit = index + 1;
+    });
+
+    res.status(200).json({
+      message: "Merit list fetched successfully",
+      data: meritList
+    });
+
+  } catch (error) {
+    console.error("Error in getMeritList:", error);
+    res.status(500).json({ 
+      message: "Error generating merit list",
+      error: error.message 
+    });
+  }
+});
 
 module.exports = {
   createResult,
