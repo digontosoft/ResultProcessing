@@ -190,9 +190,10 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
     if (religion) {
       query.religion = religion;
     }
-    console.log(query);
+    // console.log(query);
 
-    const students = await Student.find(query);
+    const students = await Student.find(query).sort({ roll: 1 });
+    // console.log("students", students);
     // now get result for this subject,class,shift,section,session,term
     // console.log("subject",name)
     const results = await Result.find({
@@ -204,19 +205,6 @@ const getStudentByRollRange = asyncHandler(async (req, res) => {
       term,
     });
 
-    console.log("query", {
-      subjectName: subject,
-      className: name,
-      shift,
-      section,
-      session,
-      term,
-    });
-
-    console.log("students", students);
-
-    console.log("results", results);
-    //console.log(st);
 
     //i will only return those students who are not in results
     const studentsNotInResults = students.filter(
@@ -287,6 +275,27 @@ const studentDeleteMany = asyncHandler(async(req,res)=>{
   }
 })
 
+const getStudentList = asyncHandler(async(req,res)=>{
+  try {
+    const {year,class:className,section,shift,group, startRoll,endRoll} = req.body
+    const query = {
+      year,
+      class:className,
+      section,
+      shift,
+      group,
+      roll:{$gte:startRoll,$lte:endRoll}
+    }
+    const students = await Student.find(query)
+    res.status(200).json({
+      message: "Student list fetched successfully",
+      data: students
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+})
+
 module.exports = {
   addStudentData,
   getAllStudent,
@@ -296,6 +305,7 @@ module.exports = {
   bulkUploadStudents,
   getStudentByRollRange,
   studentDeleteMany,
-  studentPromotion
+  studentPromotion,
+  getStudentList
 
 };

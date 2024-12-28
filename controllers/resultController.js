@@ -965,6 +965,14 @@ const deleteManyResult = asyncHandler(async(req,res)=>{
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 })
+const getMeritList = asyncHandler(async(req,res)=>{
+  const {session,term,className,section,shift} = req.body
+  const results = await Result.find({session,term,className,section,shift})
+  res.status(200).json({
+    message: "Merit list fetched successfully",
+    data: results
+  })
+})
 
 module.exports = {
   createResult,
@@ -976,4 +984,5 @@ module.exports = {
   getTebulationSheet,
   deleteManyResult,
   getMarksheet,
+  getMeritList
 };
