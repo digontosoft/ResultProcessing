@@ -246,29 +246,6 @@ const getIndividualResult = asyncHandler(async (req, res) => {
     });
     //subject vs full marks hash data
     const subjectVsFullMarks = {
-      // Bangla1st: 100,
-      // Bangla2nd: 100,
-      // English1st: 100,
-      // English2nd: 100,
-      // Bangla: 100,
-      // English: 100,
-      // Mathematics: 100,
-      // "English 1st Paper": 100,
-      // "English 2nd Paper": 100,
-      // "Bengali 1st Paper": 100,
-      // "Bengali 2nd Paper": 100,
-      // "Bangladesh and Global Studies": 100,
-      // "Information And Communication Technology": 100,
-      // "Higher Mathematics": 100,
-      // Science: 100,
-      // "Bangladesh And Global Studies": 100,
-      // "Islam and Moral Education": 100,
-      // "Religious Education": 100,
-      // Physics: 100,
-      // Chemistry: 100,
-      // Highermath: 100,
-      // Biology: 100,
-      // ICT: 50,
       Bangla:100,
         English:100,
         Mathematics:100,
@@ -418,22 +395,6 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
       });
       //subject vs full marks hash data
       const subjectVsFullMarks = {
-        // Bangla1st: 100,
-        // Bangla2nd: 100,
-        // English1st: 100,
-        // English2nd: 100,
-        // Bangla: 100,
-        // English: 100,
-        // Mathematics: 100,
-        // Science: 100,
-        // "Bangladesh And Global Studies": 100,
-        // "Islam and Moral Education": 100,
-        // "Religious Education": 100,
-        // Physics: 100,
-        // Chemistry: 100,
-        // Highermath: 100,
-        // Biology: 100,
-        // ICT: 50,
         Mathmetics:100, 
         Bangla:100,
         English:100,
@@ -694,27 +655,44 @@ const getMarksheet = asyncHandler(async (req, res) => {
         });
       } else {
         let TotalResult;
+        const subjectWiseHighestMarks = await GetSubjectWiseHighestMarks(
+          session,
+          term,
+          className,
+          section,
+          shift
+        );
+        const subjectWiseHighestMarksAbove5 = await GetSubjectWiseHighestMarksAbove5(
+          session,
+          term,
+          className,
+          section,
+          shift
+        );
         //there is 3 type of reuslt class 4 to 5, class 6 to 8 and class 9
         if (className >= 4 && className <= 5) {
           // console.log("class 4 to 5");
           TotalResult = ResultForClass4To5(
             results,
             resultGrading,
-            subjectVsFullMarks
+            subjectVsFullMarks,
+            subjectWiseHighestMarks
           );
           //here will be logic
         } else if (className >= 6 && className <= 8) {
           TotalResult = ResultForClass6to8(
             results,
             resultGrading,
-            subjectVsFullMarks
+            subjectVsFullMarks,
+            subjectWiseHighestMarksAbove5
           );
           //here will be logic
         } else if (className == 9) {
           TotalResult = ResultForClass9AndAbove(
             results,
             resultGrading,
-            subjectVsFullMarks
+            subjectVsFullMarks,
+            subjectWiseHighestMarksAbove5
           );
           //here will be logic
         }
@@ -732,6 +710,22 @@ const getMarksheet = asyncHandler(async (req, res) => {
         });
       }
     }
+        // After calculating results for all students, sort by GPA and total marks
+        TebulationSheet.sort((a, b) => {
+          // First compare by GPA
+          if (b.summary.gpa !== a.summary.gpa) {
+            return b.summary.gpa - a.summary.gpa;
+          }
+          // If GPAs are equal, compare by total obtained marks
+          return b.summary.obtainedMarks - a.summary.obtainedMarks;
+        });
+    
+        // Add merit position to each student's data
+        TebulationSheet.forEach((result, index) => {
+          result.meritPosition = index + 1;
+        });
+        //sort by roll
+        TebulationSheet.sort((a, b) => a.studentInfo.roll - b.studentInfo.roll);
     res.status(200).json({
       Message: "Tebulation sheet fetched successfully",
       Data: TebulationSheet,
