@@ -181,8 +181,9 @@ const calculateResultSummary = async (
   );
 
   // Calculate GPA without 4th subject
-  const gpaWithout4th = (
-    mainSubjects.reduce((sum, result) => sum + result.GP, 0) /
+  const hasFailingGrade = mainSubjects.some(result => result.GP === 0);
+  const gpaWithout4th = hasFailingGrade ? "0.00" : (
+    mainSubjects.reduce((sum, result) => sum + result.GP, 0) / 
     mainSubjects.length
   ).toFixed(2);
 
@@ -190,14 +191,15 @@ const calculateResultSummary = async (
   const higherMathResult = TotalResult.find(
     (result) => result.subject === "Highermath"
   );
-  const gpa =
+  const gpa = hasFailingGrade ? "0.00" : (
     higherMathResult && higherMathResult.GP > gpaWithout4th
       ? (
           (mainSubjects.reduce((sum, result) => sum + result.GP, 0) +
             higherMathResult.GP) /
           (mainSubjects.length + 1)
         ).toFixed(2)
-      : gpaWithout4th;
+      : gpaWithout4th
+  );
 
   return {
     totalMarks,
@@ -383,13 +385,28 @@ const getIndividualResult = asyncHandler(async (req, res) => {
 
 const getTebulationSheet = asyncHandler(async (req, res) => {
   try {
-    const { session, term, className, section, shift } = req.body;
+    const { session, term, className, section, shift,group } = req.body;
     const TebulationSheet = [];
     const students = await Student.find({
       class: className,
       section,
       shift,
+      group,
     });
+    const SubjectWiseHighestMarks = await GetSubjectWiseHighestMarks(
+      session,
+      term,
+      className,
+      section,
+      shift
+    );
+    const SubjectWiseHighestMarksAbove5 = await GetSubjectWiseHighestMarksAbove5(
+      session,
+      term,
+      className,
+      section,
+      shift
+    );
     // console.log("students", students);
     for (const student of students) {
       const results = await Result.find({
@@ -399,12 +416,6 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
         section,
         shift,
         studentId: student.studentId,
-      });
-      const studentInfo = await Student.findOne({
-        studentId: student.studentId,
-        class: className,
-        section,
-        shift,
       });
       //subject vs full marks hash data
       const subjectVsFullMarks = {
@@ -454,21 +465,24 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
         TotalResult = ResultForClass4To5(
           results,
           resultGrading,
-          subjectVsFullMarks
+          subjectVsFullMarks,
+          SubjectWiseHighestMarks
         );
         //here will be logic
       } else if (className >= 6 && className <= 8) {
         TotalResult = ResultForClass6to8(
           results,
           resultGrading,
-          subjectVsFullMarks
+          subjectVsFullMarks,
+          SubjectWiseHighestMarksAbove5
         );
         //here will be logic
       } else if (className == 9) {
         TotalResult = ResultForClass9AndAbove(
           results,
           resultGrading,
-          subjectVsFullMarks
+          subjectVsFullMarks,
+          SubjectWiseHighestMarksAbove5
         );
         //here will be logic
       }
@@ -480,7 +494,7 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
         shift
       );
       TebulationSheet.push({
-        studentInfo,
+        studentInfo:student,
         TotalResult,
         summary,
       });
@@ -788,19 +802,21 @@ function ResultForClass9AndAbove(
 ) {
   const TotalResult = [];
   for (const result of results) {
-    const { subjectName, subjective, objective, classAssignment, practical } =
-      result;
-    const rawMarks70 =
-      Math.abs(
-        (((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7) % 1
-      ) >= 0.05
-        ? Math.round(
-            ((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7
-          )
-        : Math.floor(
-            ((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7
-          );
+    const { subjectName, subjective, objective, classAssignment, practical } = result;
+    
+    // Check failing conditions first
+    const isFailedDueToSubjective = (subjective ?? 0) < 33;
+    const isFailedDueToCA = (classAssignment ?? 0) < 10;
+    const isFailed = isFailedDueToSubjective || isFailedDueToCA;
+
+    const rawMarks70 = Math.abs(
+      (((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7) % 1
+    ) >= 0.05
+      ? Math.round(((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7)
+      : Math.floor(((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7);
+    
     const totalRawMarks = rawMarks70 + (classAssignment ?? 18);
+
     const subjectWiseResult = {
       subject: subjectName,
       fullMarks: subjectVsFullMarks[subjectName],
@@ -813,12 +829,12 @@ function ResultForClass9AndAbove(
         Math.abs(totalRawMarks % 1) >= 0.05
           ? Math.round(totalRawMarks)
           : Math.floor(totalRawMarks),
-      grade: calculateGrade(
+      grade: isFailed ? "F" : calculateGrade(
         Math.abs(totalRawMarks % 1) >= 0.05
           ? Math.round(totalRawMarks)
           : Math.floor(totalRawMarks)
       ),
-      GP: resultGrading[
+      GP: isFailed ? 0 : resultGrading[
         calculateGrade(
           Math.abs(totalRawMarks % 1) >= 0.05
             ? Math.round(totalRawMarks)
@@ -841,30 +857,39 @@ function ResultForClass6to8(
   for (const result of results) {
     const { subjectName, subjective, objective, classAssignment, practical } =
       result;
-    const rawMarks80 =
-      ((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.8;
-    const totalRawMarks = rawMarks80 + (classAssignment ?? 18);
+   // Check failing conditions first
+   const isFailedDueToSubjective = (subjective ?? 0) < 33;
+   const isFailedDueToCA = (classAssignment ?? 0) < 10;
+   const isFailed = isFailedDueToSubjective || isFailedDueToCA;
+
+   const rawMarks70 = Math.abs(
+     (((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7) % 1
+   ) >= 0.05
+     ? Math.round(((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7)
+     : Math.floor(((subjective ?? 0) + (objective ?? 0) + (practical ?? 0)) * 0.7);
+   
+   const totalRawMarks = rawMarks70 + (classAssignment ?? 18);
     const subjectWiseResult = {
       subject: subjectName,
       fullMarks: subjectVsFullMarks[subjectName],
       subjective: subjective ?? 0,
       objective: objective ?? 0,
       practical: practical ?? 0,
-      "80%":
-        Math.abs(rawMarks80 % 1) >= 0.05
-          ? Math.round(rawMarks80)
-          : Math.floor(rawMarks80),
-      "CA(20%)": classAssignment ?? 18,
+      "70%":
+        Math.abs(rawMarks70 % 1) >= 0.05
+          ? Math.round(rawMarks70)
+          : Math.floor(rawMarks70),
+      "CA(30%)": classAssignment ?? 18,
       totalMarks:
         Math.abs(totalRawMarks % 1) >= 0.05
           ? Math.round(totalRawMarks)
           : Math.floor(totalRawMarks),
-      grade: calculateGrade(
+      grade: isFailed ? "F" : calculateGrade(
         Math.abs(totalRawMarks % 1) >= 0.05
           ? Math.round(totalRawMarks)
           : Math.floor(totalRawMarks)
       ),
-      GP: resultGrading[
+      GP: isFailed ? 0 : resultGrading[
         calculateGrade(
           Math.abs(totalRawMarks % 1) >= 0.05
             ? Math.round(totalRawMarks)
