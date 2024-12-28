@@ -305,6 +305,46 @@ const getIndividualResult = asyncHandler(async (req, res) => {
       );
       //here will be logic
     }
+
+    // Get all students' results from the same class, section, and shift
+    const allStudentsResults = await Result.find({
+      session,
+      term,
+      className,
+      section,
+      shift,
+    });
+
+    // Group results by student and calculate their total results
+    const studentsMap = new Map();
+    for (const result of allStudentsResults) {
+      if (!studentsMap.has(result.studentId)) {
+        const studentResults = allStudentsResults.filter(
+          (r) => r.studentId === result.studentId
+        );
+        const studentTotalResult = className >= 4 && className <= 5
+          ? ResultForClass4To5(studentResults, resultGrading, subjectVsFullMarks, SubjectWiseHighestMarks)
+          : ResultForClass9AndAbove(studentResults, resultGrading, subjectVsFullMarks, SubjectWiseHighestMarks);
+        
+        studentsMap.set(result.studentId, {
+          gpa: studentTotalResult.gpa,
+          totalMarks: studentTotalResult.totalMarks,
+        });
+      }
+    }
+
+    // Convert map to array and sort by GPA and total marks
+    const sortedResults = Array.from(studentsMap.entries())
+      .sort((a, b) => {
+        if (b[1].gpa !== a[1].gpa) {
+          return b[1].gpa - a[1].gpa;
+        }
+        return b[1].totalMarks - a[1].totalMarks;
+      });
+
+    // Find position of current student
+    const meritPosition = sortedResults.findIndex(([id]) => id === studentId) + 1;
+
     // Calculate summary using the new function
     const summary = await calculateResultSummary(
       TotalResult,
@@ -319,6 +359,7 @@ const getIndividualResult = asyncHandler(async (req, res) => {
         studentInfo,
         TotalResult,
         summary,
+        meritPosition,
       },
     });
   } catch (error) {
