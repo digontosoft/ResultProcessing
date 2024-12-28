@@ -1124,13 +1124,11 @@ const getMeritList = asyncHandler(async(req, res) => {
           resultGrading,
           subjectVsFullMarks
         );
-
         const annualProcessed = ResultForClass9AndAbove(
           annualResults,
           resultGrading,
           subjectVsFullMarks
         );
-
         processedResults = calculateFinalMergedResult(
           halfYearlyProcessed,
           annualProcessed,
