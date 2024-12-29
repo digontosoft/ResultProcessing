@@ -162,10 +162,16 @@ const calculateResultSummary = async (
   // Calculate total marks and obtained marks
   let totalMarks = 0;
   let obtainedMarks = 0;
+  let subjectCount ={}
 
   for (const result of TotalResult) {
-    totalMarks += result.fullMarks;
-    obtainedMarks += result.totalMarks;
+    if(subjectCount[result.subject]){
+      subjectCount[result.subject]++;
+    }else{
+      subjectCount[result.subject] = 1;
+      totalMarks += result.fullMarks;
+      obtainedMarks += result.totalMarks;
+    }
   }
 
   // Get total students count in the class
@@ -369,7 +375,7 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
       section,
       shift,
       group,
-    });
+    }).limit(1);
     const SubjectWiseHighestMarks = await GetSubjectWiseHighestMarks(
       session,
       term,
@@ -1460,16 +1466,20 @@ const getFailList = asyncHandler(async(req, res) => {
           term: "Half Yearly",
           className,
           studentId: student.studentId,
-          ...query
+          section,
+          shift
         });
+        console.log("halfYearlyResults", halfYearlyResults.length);
 
         const annualResults = await Result.find({
           session,
           term: "Annual",
           className,
           studentId: student.studentId,
-          ...query
+          section,
+          shift
         });
+        console.log("annualResults", annualResults.length);
 
         // Process and merge results
         const halfYearlyProcessed = ResultForClass9AndAbove(
@@ -1487,9 +1497,12 @@ const getFailList = asyncHandler(async(req, res) => {
           annualProcessed,
           resultGrading
         );
+        console.log("processedResults", processedResults.length);
+        results = processedResults;
       } else {
         // console.log("not merged", student.studentId, student.roll);
         // Get regular term results
+        //there is filed name subjectName in result collection i want to it as subject
         results = await Result.find({
           session,
           term,
@@ -1512,13 +1525,16 @@ const getFailList = asyncHandler(async(req, res) => {
           practical = 0, 
           classAssignment = 0 
         } = result;
-
+        console.log("result", result);
         // Define failure conditions
         const isSubjectiveFail = subjective < 33;
-        const isCAFail = classAssignment < 10;
+        let isCAFail = classAssignment < 10;
         // console.log(subjective, "---", classAssignment);
         const totalMarks = subjective + objective + practical;
-
+       //classAssignment is not required for class 4 and 5
+       if(className === "4" || className === "5"){
+        isCAFail = false;
+       }
         if (isSubjectiveFail || isCAFail) {
           // console.log("fais");
           failedSubjects.push({
