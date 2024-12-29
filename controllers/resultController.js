@@ -1203,12 +1203,16 @@ const getMeritList = asyncHandler(async(req, res) => {
 const getFailList = asyncHandler(async(req, res) => {
   console.log("getFailList");
   try {
-    const { session, term, className, section, shift, group, is_merged } = req.body;
+    const { session, term, className, section, shift, group, is_merged ,start_roll,end_roll} = req.body;
     
     // Build query based on provided filters
     let query = { };
     if (shift !== "All") query.shift = shift;
     if (section !== "All") query.section = section;
+    query.class=className;
+    if(start_roll && end_roll){
+      query.roll = { $gte: start_roll, $lte: end_roll };
+    }
     console.log("query", query);
     // Get all students matching the criteria
     const students = await Student.find(query).sort({ roll: 1 });
@@ -1275,21 +1279,17 @@ const getFailList = asyncHandler(async(req, res) => {
           resultGrading
         );
       } else {
-        console.log("not merged", student.studentId);
+        // console.log("not merged", student.studentId, student.roll);
         // Get regular term results
         results = await Result.find({
           session,
           term,
           className,
           studentId: student.studentId,
-          ...query
+          section,
+          shift
         });
-        console.log("results", results.length);
-        processedResults = ResultForClass9AndAbove(
-          results,
-          resultGrading,
-          subjectVsFullMarks
-        );
+        // console.log("results", results.length);
       }
 
       // Check for failed subjects
@@ -1313,13 +1313,13 @@ const getFailList = asyncHandler(async(req, res) => {
         if (isSubjectiveFail || isCAFail) {
           // console.log("fais");
           failedSubjects.push({
-            "Subject Code": subjectName.substring(0, 4).toUpperCase(),
-            "Subject Name": subjectName,
-            "Subjective": subjective,
-            "Objective": objective,
-            "Practical": practical,
+            "subjectCode": subjectName.substring(0, 4).toUpperCase(),
+            "subjectName": subjectName,
+            "subjective": subjective,
+            "objective": objective,
+            "practical": practical,
             "Total": totalMarks,
-            "Fail": [
+            "fail": [
               ...(isSubjectiveFail ? ["subjective"] : []),
               ...(isCAFail ? ["classAssignment"] : [])
             ].join(", ")
@@ -1331,10 +1331,13 @@ const getFailList = asyncHandler(async(req, res) => {
       // Only add student to fail list if they have failed subjects
       if (failedSubjects.length > 0) {
         failList.push({
-          "Student's ID": student.studentId,
-          "Roll No": student.roll,
-          "Student's Name": student.studentName,
-          "Subject Results": failedSubjects
+          "studentInfo": {
+            "studentId": student.studentId,
+            "class": student.class,
+            "rollNo": student.roll,
+            "studentName": student.studentName
+          },
+          "subjects": failedSubjects
         });
       }
     }
