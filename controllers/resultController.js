@@ -486,6 +486,7 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
 });
 const getMarksheet = asyncHandler(async (req, res) => {
   try {
+    const startTime = performance.now();
     // console.log("req.body", req.body);
     const {
       session,
@@ -726,12 +727,220 @@ const getMarksheet = asyncHandler(async (req, res) => {
         });
         //sort by roll
         TebulationSheet.sort((a, b) => a.studentInfo.roll - b.studentInfo.roll);
+        const endTime = performance.now();
+        const executionTime = (endTime - startTime) / 1000; // Convert to seconds
+    
     res.status(200).json({
       Message: "Tebulation sheet fetched successfully",
       Data: TebulationSheet,
+      executionTime: `${executionTime.toFixed(2)} seconds`
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+const getMarksheetNewfunction = asyncHandler(async (req, res) => {
+  // Start timing
+  const startTime = performance.now();
+  
+  try {
+    const {
+      session,
+      term,
+      className,
+      section,
+      shift,
+      start_roll,
+      end_roll,
+      is_merged,
+      group,
+    } = req.body;
+
+    // Get all students first
+    const students = await Student.find({
+      class: className,
+      section,
+      shift,
+      year: session,
+      group: group,
+      roll: { $gte: start_roll, $lte: end_roll },
+    }).sort({ roll: 1 });
+
+    // Process students in batches of 20
+    const BATCH_SIZE = 20;
+    const batches = [];
+    
+    for (let i = 0; i < students.length; i += BATCH_SIZE) {
+      batches.push(students.slice(i, i + BATCH_SIZE));
+    }
+
+    // Process each batch in parallel
+    const batchResults = await Promise.all(
+      batches.map(async (studentBatch) => {
+        return Promise.all(
+          studentBatch.map(async (student) => {
+            // Constants moved outside the loop
+            const subjectVsFullMarks = {
+              Mathmetics: 100,
+              Bangla: 100,
+              // ... rest of the subjects
+            };
+            
+            const resultGrading = {
+              "A+": 5.0,
+              A: 4.0,
+              "A-": 3.5,
+              B: 3.0,
+              C: 2.0,
+              D: 1.0,
+              F: 0.0,
+            };
+
+            if (is_merged) {
+              // Parallel fetch of half yearly and annual results
+              const [halfYearlyResults, annualResults, halfYearlyHighestMarks, annualHighestMarks] = 
+                await Promise.all([
+                  Result.find({
+                    session,
+                    term: "Half Yearly",
+                    className,
+                    section,
+                    shift,
+                    studentId: student.studentId,
+                  }),
+                  Result.find({
+                    session,
+                    term: "Annual",
+                    className,
+                    section,
+                    shift,
+                    studentId: student.studentId,
+                  }),
+                  GetSubjectWiseHighestMarksAbove5(
+                    session,
+                    "Half Yearly",
+                    className,
+                    section,
+                    shift
+                  ),
+                  GetSubjectWiseHighestMarksAbove5(
+                    session,
+                    "Annual",
+                    className,
+                    section,
+                    shift
+                  )
+                ]);
+
+              let halfYearlyProcessed, annualProcessed, TotalResult;
+
+              // Process based on class level
+              if (className >= 4 && className <= 5) {
+                [halfYearlyProcessed, annualProcessed] = await Promise.all([
+                  ResultForClass4To5(halfYearlyResults, resultGrading, subjectVsFullMarks),
+                  ResultForClass4To5(annualResults, resultGrading, subjectVsFullMarks)
+                ]);
+              } else if (className >= 6 && className <= 8) {
+                [halfYearlyProcessed, annualProcessed] = await Promise.all([
+                  ResultForClass6to8(halfYearlyResults, resultGrading, subjectVsFullMarks),
+                  ResultForClass6to8(annualResults, resultGrading, subjectVsFullMarks)
+                ]);
+              } else if (className >= 9) {
+                [halfYearlyProcessed, annualProcessed] = await Promise.all([
+                  ResultForClass9AndAbove(halfYearlyResults, resultGrading, subjectVsFullMarks, halfYearlyHighestMarks),
+                  ResultForClass9AndAbove(annualResults, resultGrading, subjectVsFullMarks, annualHighestMarks)
+                ]);
+              }
+
+              TotalResult = calculateFinalMergedResult(
+                halfYearlyProcessed,
+                annualProcessed,
+                resultGrading
+              );
+
+              const summary = await calculateResultSummary(
+                TotalResult,
+                className,
+                section,
+                shift
+              );
+
+              return {
+                studentInfo: student,
+                halfYearlyResults: halfYearlyProcessed,
+                annualResults: annualProcessed,
+                TotalResult,
+                summary,
+              };
+            } else {
+              // Non-merged results processing
+              const [results, highestMarks, highestMarksAbove5] = await Promise.all([
+                Result.find({
+                  session,
+                  term,
+                  className,
+                  section,
+                  shift,
+                  studentId: student.studentId,
+                }),
+                GetSubjectWiseHighestMarks(session, term, className, section, shift),
+                GetSubjectWiseHighestMarksAbove5(session, term, className, section, shift)
+              ]);
+
+              let TotalResult;
+              if (className >= 4 && className <= 5) {
+                TotalResult = ResultForClass4To5(results, resultGrading, subjectVsFullMarks, highestMarks);
+              } else if (className >= 6 && className <= 8) {
+                TotalResult = ResultForClass6to8(results, resultGrading, subjectVsFullMarks, highestMarksAbove5);
+              } else if (className == 9) {
+                TotalResult = ResultForClass9AndAbove(results, resultGrading, subjectVsFullMarks, highestMarksAbove5);
+              }
+
+              const summary = await calculateResultSummary(TotalResult, className, section, shift);
+              
+              return {
+                studentInfo: student,
+                TotalResult,
+                summary,
+              };
+            }
+          })
+        );
+      })
+    );
+
+    // Flatten batch results into single array
+    let TebulationSheet = batchResults.flat();
+
+    // Sort and add merit positions
+    TebulationSheet.sort((a, b) => {
+      if (b.summary.gpa !== a.summary.gpa) return b.summary.gpa - a.summary.gpa;
+      return b.summary.obtainedMarks - a.summary.obtainedMarks;
+    });
+
+    TebulationSheet.forEach((result, index) => {
+      result.meritPosition = index + 1;
+    });
+
+    TebulationSheet.sort((a, b) => a.studentInfo.roll - b.studentInfo.roll);
+
+    // Calculate execution time before sending response
+    const endTime = performance.now();
+    const executionTime = (endTime - startTime) / 1000; // Convert to seconds
+
+    res.status(200).json({
+      Message: "Tabulation sheet fetched successfully",
+      Data: TebulationSheet,
+      executionTime: `${executionTime.toFixed(2)} seconds`
+    });
+  } catch (error) {
+    const endTime = performance.now();
+    const executionTime = (endTime - startTime) / 1000;
+
+    res.status(500).json({ 
+      message: error.message,
+      executionTime: `${executionTime.toFixed(2)} seconds`
+    });
   }
 });
 function calculateGrade(totalMarks) {
@@ -1370,5 +1579,6 @@ module.exports = {
   deleteManyResult,
   getMarksheet,
   getMeritList,
-  getFailList
+  getFailList,
+  getMarksheetNewfunction
 };
