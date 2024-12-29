@@ -375,7 +375,7 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
       section,
       shift,
       group,
-    }).limit(1);
+    });
     const SubjectWiseHighestMarks = await GetSubjectWiseHighestMarks(
       session,
       term,
