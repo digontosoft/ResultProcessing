@@ -173,12 +173,13 @@ const calculateResultSummary = async (
       obtainedMarks += result.totalMarks;
     }
   }
-
+  let query = {}
+  if(shift !== "All") query.shift = shift;
+  if(section !== "All") query.section = section;
   // Get total students count in the class
   const studentsCount = await Student.countDocuments({
     class: className,
-    section: section,
-    shift: shift,
+    ...query
   });
 
   // Calculate GPA (assuming 4th subject is Higher Math)
@@ -1527,11 +1528,10 @@ const getMeritListNewfunction = asyncHandler(async(req, res) => {
                 session,
                 term,
                 className,
-                section,
-                shift,
+                ...query,
                 studentId: student.studentId,
               });
-
+              console.log("results", results.length);
               processedResults = className=='4'||className=='5' ? ResultForClass4To5(
                 results,
                 resultGrading,
@@ -1542,14 +1542,14 @@ const getMeritListNewfunction = asyncHandler(async(req, res) => {
                 subjectVsFullMarks
               );
             }
-
+            // console.log("processedResults", processedResults.length);
             const summary = await calculateResultSummary(
               processedResults,
               className,
               section,
               shift
             );
-
+            // console.log("summary", summary);
             const noOfFail = processedResults.filter(result => result.grade === "F").length;
 
             return {
