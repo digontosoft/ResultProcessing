@@ -1909,7 +1909,155 @@ const getFailList = asyncHandler(async(req, res) => {
     });
   }
 });
+const getResultSummary = asyncHandler(async(req, res) => {
+  try {
+    const { session, term, className, section, shift, group } = req.body;
+    
+    // Build query based on provided filters
+    let query = {};
+    if (shift !== "All") query.shift = shift;
+    if (section !== "All") query.section = section;
+    
+    // Get all students in the class
+    const students = await Student.find({
+      class: className,
+      ...query,
+      group,
+      year: session
+    });
 
+    const totalStudents = students.length;
+    let summary = {
+      totalStudents,
+      totalExaminees: 0,
+      totalPassed: 0,
+      totalFailed: 0,
+      passPercentage: 0,
+      failPercentage: 0,
+      gpaBreakdown: {
+        'GPA 5.00': 0,
+        'GPA 4.00-4.99': 0,
+        'GPA 3.50-3.99': 0,
+        'GPA 3.00-3.49': 0,
+        'GPA 2.00-2.99': 0,
+        'Below GPA 2.00': 0
+      },
+      gpaPercentages: {}
+    };
+
+    // Constants for result processing
+    const subjectVsFullMarks = {
+      Bangla:100,
+      English:100,
+      Mathematics:100,
+      Science:100,
+      "Bangladesh and Global Studies":100,
+      "Islam and Moral Education":100,
+      "Hindu and Moral Education":100,
+      "Christian and Moral Education":100,
+      "Digital technology":100,
+      "Life and livelihood":100,
+      "Art and culture":100,
+      "Well being":100,
+      "History and social science":100,
+    };
+
+    const resultGrading = {
+      "A+": 5.0,
+      A: 4.0,
+      "A-": 3.5,
+      B: 3.0,
+      C: 2.0,
+      D: 1.0,
+      F: 0.0,
+    };
+
+    // Process each student's results
+    for (const student of students) {
+      const results = await Result.find({
+        session,
+        term,
+        className,
+        studentId: student.studentId,
+        ...query
+      });
+
+      if (results.length > 0) {
+        summary.totalExaminees++;
+        
+        // Process results based on class
+        const processedResults = className === "4" || className === "5" 
+          ? ResultForClass4To5(results, resultGrading, subjectVsFullMarks)
+          : ResultForClass9AndAbove(results, resultGrading, subjectVsFullMarks);
+
+        // Calculate student's summary
+        const studentSummary = await calculateResultSummary(
+          processedResults,
+          className,
+          section,
+          shift
+        );
+
+        // Check if student passed or failed
+        const hasFailed = processedResults.some(result => result.grade === "F");
+        if (hasFailed) {
+          summary.totalFailed++;
+        } else {
+          summary.totalPassed++;
+        }
+
+        // Categorize GPA
+        const gpa = studentSummary.gpa;
+        if (gpa === 5.00) {
+          summary.gpaBreakdown['GPA 5.00']++;
+        } else if (gpa >= 4.00) {
+          summary.gpaBreakdown['GPA 4.00-4.99']++;
+        } else if (gpa >= 3.50) {
+          summary.gpaBreakdown['GPA 3.50-3.99']++;
+        } else if (gpa >= 3.00) {
+          summary.gpaBreakdown['GPA 3.00-3.49']++;
+        } else if (gpa >= 2.00) {
+          summary.gpaBreakdown['GPA 2.00-2.99']++;
+        } else {
+          summary.gpaBreakdown['Below GPA 2.00']++;
+        }
+      }
+    }
+
+    // Calculate percentages
+    if (summary.totalExaminees > 0) {
+      summary.passPercentage = ((summary.totalPassed / summary.totalExaminees) * 100).toFixed(2);
+      summary.failPercentage = ((summary.totalFailed / summary.totalExaminees) * 100).toFixed(2);
+      
+      // Calculate GPA percentages
+      for (const [key, value] of Object.entries(summary.gpaBreakdown)) {
+        summary.gpaPercentages[key] = ((value / summary.totalExaminees) * 100).toFixed(2);
+      }
+    }
+
+    res.status(200).json({
+      message: "Result summary fetched successfully",
+      data: {
+        ...summary,
+        classInfo: {
+          session,
+          term,
+          className,
+          section,
+          shift,
+          group
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in getResultSummary:", error);
+    res.status(500).json({ 
+      message: "Error generating result summary",
+      error: error.message 
+    });
+  }
+});
 module.exports = {
   createResult,
   bulkUploadResults,
@@ -1923,5 +2071,6 @@ module.exports = {
   getMeritList,
   getFailList,
   getMarksheetNewfunction,
-  getMeritListNewfunction
+  getMeritListNewfunction,
+  getResultSummary
 };

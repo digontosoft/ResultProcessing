@@ -14,7 +14,8 @@ const {
   getMeritList,
   getFailList,
   getMarksheetNewfunction,
-  getMeritListNewfunction
+  getMeritListNewfunction,
+  getResultSummary
 } = require("../controllers/resultController");
 
 // Configure multer storage
@@ -56,6 +57,7 @@ router.post("/result/marksheet", getMarksheetNewfunction);
 router.post("/result/tebulation-sheet", getTebulationSheet);
 router.post("/result/merit-list", getMeritListNewfunction);
 router.post("/result/fail-list", getFailList);
+router.post("/result/result-summary", getResultSummary);
 router.post('/delete-many-result',deleteManyResult)
 
 module.exports = router;
