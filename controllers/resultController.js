@@ -1856,7 +1856,7 @@ const getFailList = asyncHandler(async(req, res) => {
         const isSubjectiveFail = subjective < 33;
         let isCAFail = classAssignment < 10;
         // console.log(subjective, "---", classAssignment);
-        const totalMarks = subjective + objective + practical;
+        const totalMarks = subjective + objective + practical+classAssignment;
        //classAssignment is not required for class 4 and 5
        if(className === "4" || className === "5"){
         isCAFail = false;
@@ -1869,6 +1869,7 @@ const getFailList = asyncHandler(async(req, res) => {
             "subjective": subjective,
             "objective": objective,
             "practical": practical,
+            "ca": classAssignment,
             "Total": totalMarks,
             "fail": [
               ...(isSubjectiveFail ? ["subjective"] : []),
