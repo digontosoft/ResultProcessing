@@ -749,7 +749,7 @@ const getMarksheet = asyncHandler(async (req, res) => {
 const getMarksheetNewfunction = asyncHandler(async (req, res) => {
   // Start timing
   const startTime = performance.now();
-  
+
   try {
     const {
       session,
@@ -762,17 +762,18 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
       is_merged,
       group,
     } = req.body;
-
+    let query = {}
+    if(shift !== "All") query.shift = shift;
+    if(section !== "All") query.section = section;
     // Get all students first
     const students = await Student.find({
       class: className,
-      section,
-      shift,
+      ...query,
       year: session,
       group: group,
       roll: { $gte: start_roll, $lte: end_roll },
     }).sort({ roll: 1 });
-
+    console.log("students", students.length);
     // Process students in batches of 20
     const BATCH_SIZE = 20;
     const batches = [];
@@ -823,16 +824,14 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
                     session,
                     term: "Half Yearly",
                     className,
-                    section,
-                    shift,
+                    ...query,
                     studentId: student.studentId,
                   }),
                   Result.find({
                     session,
                     term: "Annual",
                     className,
-                    section,
-                    shift,
+                    ...query,
                     studentId: student.studentId,
                   }),
                   GetSubjectWiseHighestMarksAbove5(
@@ -898,8 +897,7 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
                   session,
                   term,
                   className,
-                  section,
-                  shift,
+                  ...query,
                   studentId: student.studentId,
                 }),
                 GetSubjectWiseHighestMarks(session, term, className, section, shift),
@@ -1149,12 +1147,14 @@ async function GetSubjectWiseHighestMarks(
   section,
   shift
 ) {
+  let query = {}
+  if(shift !== "All") query.shift = shift;
+  if(section !== "All") query.section = section;
   const results = await Result.find({
     session,
     term,
     className,
-    section,
-    shift,
+    ...query,
   });
   const SubjectWiseHighestMarks = {};
   for (const result of results) {
@@ -1175,12 +1175,14 @@ async function GetSubjectWiseHighestMarksAbove5(
   section,
   shift
 ) {
+  let query = {}
+  if(shift !== "All") query.shift = shift;
+  if(section !== "All") query.section = section;
   const results = await Result.find({
     session,
     term,
     className,
-    section,
-    shift,
+    ...query,
   });
   const SubjectWiseHighestMarks = {};
   for (const result of results) {
