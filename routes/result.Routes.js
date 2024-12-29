@@ -13,7 +13,8 @@ const {
   getMarksheet,
   getMeritList,
   getFailList,
-  getMarksheetNewfunction
+  getMarksheetNewfunction,
+  getMeritListNewfunction
 } = require("../controllers/resultController");
 
 // Configure multer storage
@@ -53,7 +54,7 @@ router.post("/result/bulk-upload", upload.single("file"), bulkUploadResults);
 router.post("/result/individual", getIndividualResult);
 router.post("/result/marksheet", getMarksheetNewfunction);
 router.post("/result/tebulation-sheet", getTebulationSheet);
-router.post("/result/merit-list", getMeritList);
+router.post("/result/merit-list", getMeritListNewfunction);
 router.post("/result/fail-list", getFailList);
 router.post('/delete-many-result',deleteManyResult)
 
