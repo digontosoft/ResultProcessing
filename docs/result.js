@@ -799,8 +799,18 @@ const resultDocs = {
                   },
                   is_merged: {
                     type: "boolean",
-                    example: true,
+                    example: false,
                     description: "Whether to merge Half Yearly and Annual results"
+                  },
+                  start_roll: {
+                    type: "string",
+                    example: "1",
+                    description: "Start roll number"
+                  },
+                  end_roll: {
+                    type: "string",
+                    example: "10",
+                    description: "End roll number"
                   }
                 }
               }
