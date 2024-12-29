@@ -789,6 +789,18 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
             const subjectVsFullMarks = {
               Mathmetics: 100,
               Bangla: 100,
+              English:100,
+              Mathematics:100,
+              Science:100,
+              "Bangladesh and Global Studies":100,
+              "Islam and Moral Education":100,
+              "Hindu and Moral Education":100,
+              "Christian and Moral Education":100,
+              "Digital technology":100,
+              "Life and livelihood":100,
+              "Art and culture":100,
+              "Well being":100,
+              "History and social science":100,
               // ... rest of the subjects
             };
             
