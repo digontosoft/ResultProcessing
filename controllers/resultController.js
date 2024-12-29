@@ -1272,6 +1272,7 @@ const deleteManyResult = asyncHandler(async(req,res)=>{
 })
 const getMeritList = asyncHandler(async(req, res) => {
   try {
+    const startTime = performance.now();
     const { session, term, className, section, shift, group, is_merged } = req.body;
     //if shif is All or section is All then shift and section is not required in query
     let query = {}
@@ -1413,7 +1414,176 @@ const getMeritList = asyncHandler(async(req, res) => {
       student.serial = index + 1;
       student.merit = index + 1;
     });
+    const endTime = performance.now();
+    const executionTime = endTime - startTime;
+    console.log(`Execution time: ${executionTime.toFixed(2)} milliseconds`);
+    res.status(200).json({
+      message: "Merit list fetched successfully",
+      data: meritList
+    });
 
+  } catch (error) {
+    console.error("Error in getMeritList:", error);
+    res.status(500).json({ 
+      message: "Error generating merit list",
+      error: error.message 
+    });
+  }
+});
+const getMeritListNewfunction = asyncHandler(async(req, res) => {
+  try {
+    const startTime = performance.now();
+    const { session, term, className, section, shift, group, is_merged } = req.body;
+    
+    // Build query
+    let query = {};
+    if(shift !== "All") query.shift = shift;
+    if(section !== "All") query.section = section;
+    
+    // Get all students matching the criteria
+    const students = await Student.find({
+      class: className,
+      ...query,
+      group,
+      year: session
+    }).sort({ roll: 1 });
+
+    // Process students in batches of 50
+    const BATCH_SIZE = 50;
+    const batches = [];
+    for (let i = 0; i < students.length; i += BATCH_SIZE) {
+      batches.push(students.slice(i, i + BATCH_SIZE));
+    }
+
+    // Constants moved outside the loop
+    const subjectVsFullMarks = {
+      Mathmetics: 100,
+      Bangla: 100,
+      English: 100,
+      Mathematics: 100,
+      Science: 100,
+      "Bangladesh and Global Studies": 100,
+      "Islam and Moral Education": 100,
+      "Hindu and Moral Education": 100,
+      "Christian and Moral Education": 100,
+      "Digital technology": 100,
+      "Life and livelihood": 100,
+      "Art and culture": 100,
+      "Well being": 100,
+      "History and social science": 100,
+    };
+
+    const resultGrading = {
+      "A+": 5.0,
+      A: 4.0,
+      "A-": 3.5,
+      B: 3.0,
+      C: 2.0,
+      D: 1.0,
+      F: 0.0,
+    };
+
+    // Process each batch in parallel
+    const batchResults = await Promise.all(
+      batches.map(async (studentBatch) => {
+        return Promise.all(
+          studentBatch.map(async (student) => {
+            let processedResults;
+
+            if (is_merged) {
+              // Parallel fetch of half yearly and annual results
+              const [halfYearlyResults, annualResults] = await Promise.all([
+                Result.find({
+                  session,
+                  term: "Half Yearly",
+                  className,
+                  section,
+                  shift,
+                  studentId: student.studentId,
+                }),
+                Result.find({
+                  session,
+                  term: "Annual",
+                  className,
+                  section,
+                  shift,
+                  studentId: student.studentId,
+                })
+              ]);
+
+              // Process results in parallel
+              const [halfYearlyProcessed, annualProcessed] = await Promise.all([
+                ResultForClass9AndAbove(halfYearlyResults, resultGrading, subjectVsFullMarks),
+                ResultForClass9AndAbove(annualResults, resultGrading, subjectVsFullMarks)
+              ]);
+
+              processedResults = calculateFinalMergedResult(
+                halfYearlyProcessed,
+                annualProcessed,
+                resultGrading
+              );
+            } else {
+              const results = await Result.find({
+                session,
+                term,
+                className,
+                section,
+                shift,
+                studentId: student.studentId,
+              });
+
+              processedResults = className=='4'||className=='5' ? ResultForClass4To5(
+                results,
+                resultGrading,
+                subjectVsFullMarks
+              ) : ResultForClass9AndAbove(
+                results,
+                resultGrading,
+                subjectVsFullMarks
+              );
+            }
+
+            const summary = await calculateResultSummary(
+              processedResults,
+              className,
+              section,
+              shift
+            );
+
+            const noOfFail = processedResults.filter(result => result.grade === "F").length;
+
+            return {
+              serial: 0, // Will be set after sorting
+              merit: 0, // Will be set after sorting
+              name: student.studentName,
+              roll: student.roll,
+              section: student.section,
+              noOfFail,
+              gpa: summary.gpa,
+              total: summary.obtainedMarks
+            };
+          })
+        );
+      })
+    );
+
+    // Flatten batch results into single array
+    let meritList = batchResults.flat();
+
+    // Sort by GPA and total marks
+    meritList.sort((a, b) => {
+      if (b.gpa !== a.gpa) return b.gpa - a.gpa;
+      return b.total - a.total;
+    });
+
+    // Add serial and merit numbers
+    meritList.forEach((student, index) => {
+      student.serial = index + 1;
+      student.merit = index + 1;
+    });
+    const endTime = performance.now();
+    const executionTime = endTime - startTime;
+    console.log(`Execution time: ${executionTime.toFixed(2)} milliseconds`);
     res.status(200).json({
       message: "Merit list fetched successfully",
       data: meritList
@@ -1608,5 +1778,6 @@ module.exports = {
   getMarksheet,
   getMeritList,
   getFailList,
-  getMarksheetNewfunction
+  getMarksheetNewfunction,
+  getMeritListNewfunction
 };
