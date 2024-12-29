@@ -369,6 +369,147 @@ const getIndividualResult = asyncHandler(async (req, res) => {
 
 const getTebulationSheet = asyncHandler(async (req, res) => {
   try {
+    const startTime = performance.now();
+    const { session, term, className, section, shift, group } = req.body;
+    let query = {};
+    if(shift !== "All") query.shift = shift;
+    if(section !== "All") query.section = section;
+
+    // Parallel fetch of initial data
+    const [students, SubjectWiseHighestMarks, SubjectWiseHighestMarksAbove5] = await Promise.all([
+      Student.find({
+        class: className,
+        ...query,
+        group,
+      }),
+      GetSubjectWiseHighestMarks(session, term, className, section, shift),
+      GetSubjectWiseHighestMarksAbove5(session, term, className, section, shift)
+    ]);
+
+    // Constants moved outside the loop
+    const subjectVsFullMarks = {
+      Mathmetics: 100,
+      Bangla: 100,
+      English: 100,
+      Mathematics: 100,
+      Science: 100,
+      "Bangladesh and Global Studies": 100,
+      "Islam and Moral Education": 100,
+      "Hindu and Moral Education": 100,
+      "Christian and Moral Education": 100,
+      "Digital technology": 100,
+      "Life and livelihood": 100,
+      "Art and culture": 100,
+      "Well being": 100,
+      "History and social science": 100,
+    };
+
+    const resultGrading = {
+      "A+": 5.0,
+      A: 4.0,
+      "A-": 3.5,
+      B: 3.0,
+      C: 2.0,
+      D: 1.0,
+      F: 0.0,
+    };
+
+    // Process students in batches of 50
+    const BATCH_SIZE = 50;
+    const batches = [];
+    for (let i = 0; i < students.length; i += BATCH_SIZE) {
+      batches.push(students.slice(i, i + BATCH_SIZE));
+    }
+
+    // Process each batch in parallel
+    const batchResults = await Promise.all(
+      batches.map(async (studentBatch) => {
+        return Promise.all(
+          studentBatch.map(async (student) => {
+            const results = await Result.find({
+              session,
+              term,
+              className,
+              ...query,
+              studentId: student.studentId,
+            });
+
+            let TotalResult;
+            if (className >= 4 && className <= 5) {
+              TotalResult = ResultForClass4To5(
+                results,
+                resultGrading,
+                subjectVsFullMarks,
+                SubjectWiseHighestMarks
+              );
+            } else if (className >= 6 && className <= 8) {
+              TotalResult = ResultForClass6to8(
+                results,
+                resultGrading,
+                subjectVsFullMarks,
+                SubjectWiseHighestMarksAbove5
+              );
+            } else if (className == 9) {
+              TotalResult = ResultForClass9AndAbove(
+                results,
+                resultGrading,
+                subjectVsFullMarks,
+                SubjectWiseHighestMarksAbove5
+              );
+            }
+
+            const summary = await calculateResultSummary(
+              TotalResult,
+              className,
+              section,
+              shift
+            );
+
+            return {
+              studentInfo: student,
+              TotalResult,
+              summary,
+            };
+          })
+        );
+      })
+    );
+
+    // Flatten batch results into single array
+    let TebulationSheet = batchResults.flat();
+
+    // Sort by GPA and total marks
+    TebulationSheet.sort((a, b) => {
+      if (b.summary.gpa !== a.summary.gpa) {
+        return b.summary.gpa - a.summary.gpa;
+      }
+      return b.summary.obtainedMarks - a.summary.obtainedMarks;
+    });
+
+    // Add merit positions
+    TebulationSheet.forEach((result, index) => {
+      result.meritPosition = index + 1;
+    });
+
+    // Sort by roll
+    TebulationSheet.sort((a, b) => a.studentInfo.roll - b.studentInfo.roll);
+
+    const endTime = performance.now();
+    const executionTime = (endTime - startTime) / 1000; // Convert to seconds
+
+    res.status(200).json({
+      Message: "Tabulation sheet fetched successfully",
+      Data: TebulationSheet,
+      executionTime: `${executionTime.toFixed(2)} seconds`
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+const getTebulationSheetOldfunction = asyncHandler(async (req, res) => {
+  try {
     const { session, term, className, section, shift, group } = req.body;
     const TebulationSheet = [];
     let query = {}
