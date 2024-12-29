@@ -371,10 +371,12 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
   try {
     const { session, term, className, section, shift, group } = req.body;
     const TebulationSheet = [];
+    let query = {}
+    if(shift !== "All") query.shift = shift;
+    if(section !== "All") query.section = section;
     const students = await Student.find({
       class: className,
-      section,
-      shift,
+      ...query,
       group,
     });
     const SubjectWiseHighestMarks = await GetSubjectWiseHighestMarks(
@@ -396,8 +398,7 @@ const getTebulationSheet = asyncHandler(async (req, res) => {
         session,
         term,
         className,
-        section,
-        shift,
+        ...query,
         studentId: student.studentId,
       });
       //subject vs full marks hash data
