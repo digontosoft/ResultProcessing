@@ -915,7 +915,7 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
       group: group,
       roll: { $gte: start_roll, $lte: end_roll },
     }).sort({ roll: 1 });
-    console.log("students", students.length);
+    // console.log("students", students.length);
     // Process students in batches of 20
     const BATCH_SIZE = 20;
     const batches = [];
@@ -960,7 +960,10 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
 
             if (is_merged) {
               // Parallel fetch of half yearly and annual results
-              const [halfYearlyResults, annualResults, halfYearlyHighestMarks, annualHighestMarks] = 
+               let halfYearlyResults, annualResults, halfYearlyHighestMarks, annualHighestMarks;
+               if(className >= 6 && className <= 10){
+                // console.log("class 6 to 10");
+                [halfYearlyResults, annualResults, halfYearlyHighestMarks, annualHighestMarks] = 
                 await Promise.all([
                   Result.find({
                     session,
@@ -991,14 +994,47 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
                     shift
                   )
                 ]);
+               } else {
+                // console.log("class 4 to 5");
+                [halfYearlyResults, annualResults, halfYearlyHighestMarks, annualHighestMarks] = await Promise.all([
+                  Result.find({
+                    session,
+                    term: "Half Yearly",
+                    className,
+                    ...query,
+                    studentId: student.studentId,
+                  }),
+                  Result.find({
+                    session,
+                    term: "Annual",
+                    className,
+                    ...query,
+                    studentId: student.studentId,
+                  }),
+                  GetSubjectWiseHighestMarks(
+                    session,
+                    "Half Yearly",
+                    className,
+                    section,
+                    shift
+                  ),
+                  GetSubjectWiseHighestMarks(
+                    session,
+                    "Annual",
+                    className,
+                    section,
+                    shift
+                  )
+                ]);
+                }
 
               let halfYearlyProcessed, annualProcessed, TotalResult;
 
               // Process based on class level
               if (className >= 4 && className <= 5) {
                 [halfYearlyProcessed, annualProcessed] = await Promise.all([
-                  ResultForClass4To5(halfYearlyResults, resultGrading, subjectVsFullMarks),
-                  ResultForClass4To5(annualResults, resultGrading, subjectVsFullMarks)
+                  ResultForClass4To5(halfYearlyResults, resultGrading, subjectVsFullMarks, halfYearlyHighestMarks),
+                  ResultForClass4To5(annualResults, resultGrading, subjectVsFullMarks, annualHighestMarks)
                 ]);
               } else if (className >= 6 && className <= 8) {
                 [halfYearlyProcessed, annualProcessed] = await Promise.all([
@@ -1299,15 +1335,20 @@ async function GetSubjectWiseHighestMarks(
     ...query,
   });
   const SubjectWiseHighestMarks = {};
+  // console.log("results", results.length);
   for (const result of results) {
+    // console.log(result);
     const { subjectName, subjective, objective, practical } = result;
+    // console.log("subjectName", subjectName, "subjective", subjective, "objective", objective, "practical", practical);
     const totalMarks = (subjective ?? 0) + (objective ?? 0) + (practical ?? 0);
+    // console.log("totalMarks", totalMarks);
     SubjectWiseHighestMarks[subjectName] = SubjectWiseHighestMarks[subjectName]
       ? SubjectWiseHighestMarks[subjectName] < totalMarks
         ? totalMarks
         : SubjectWiseHighestMarks[subjectName]
       : totalMarks;
   }
+  // console.log("SubjectWiseHighestMarks", SubjectWiseHighestMarks);
   return SubjectWiseHighestMarks;
 }
 async function GetSubjectWiseHighestMarksAbove5(
