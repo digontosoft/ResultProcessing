@@ -47,7 +47,7 @@ const upload = multer({
 });
 
 router.post("/result/create", createResult);
-router.get("/result/get_all", getAllResultData);
+router.post("/result/get_all", getAllResultData);
 router.put("/result/update/:id", updateResult);
 router.delete("/result/delete/:id", deleteResult);
 //want to make a route for bulk upload of results
