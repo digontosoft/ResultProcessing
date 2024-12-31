@@ -1828,7 +1828,7 @@ const getMeritListNewfunction = asyncHandler(async(req, res) => {
     });
   }
 });
-const getFailList = asyncHandler(async(req, res) => {
+const getFailListOldfunction = asyncHandler(async(req, res) => {
   console.log("getFailList");
   try {
     const { session, term, className, section, shift, group, is_merged ,start_roll,end_roll} = req.body;
@@ -1987,6 +1987,175 @@ const getFailList = asyncHandler(async(req, res) => {
     res.status(200).json({
       message: "Fail list generated successfully",
       data: failList
+    });
+
+  } catch (error) {
+    console.error("Error in getFailList:", error);
+    res.status(500).json({ 
+      message: "Error generating fail list",
+      error: error.message 
+    });
+  }
+});
+const getFailList = asyncHandler(async(req, res) => {
+  try {
+    const startTime = performance.now();
+    const { session, term, className, section, shift, group, is_merged, start_roll, end_roll } = req.body;
+    
+    // Build query
+    let query = {};
+    if (shift !== "All") query.shift = shift;
+    if (section !== "All") query.section = section;
+    query.class = className;
+    if (start_roll && end_roll) {
+      query.roll = { $gte: start_roll, $lte: end_roll };
+    }
+
+    // Get all students matching criteria
+    const students = await Student.find(query).sort({ roll: 1 });
+    // console.log("STUDENTS", students.length);
+
+    // Process students in batches
+    const BATCH_SIZE = 50;
+    const batches = [];
+    for (let i = 0; i < students.length; i += BATCH_SIZE) {
+      batches.push(students.slice(i, i + BATCH_SIZE));
+    }
+
+    // Constants moved outside loops
+    const subjectVsFullMarks = {
+      Mathmetics: 100,
+      Bangla: 100,
+      // ... other subjects
+    };
+
+    const resultGrading = {
+      "A+": 5.0, A: 4.0, "A-": 3.5, B: 3.0, C: 2.0, D: 1.0, F: 0.0,
+    };
+
+    // Process batches in parallel
+    const batchResults = await Promise.all(
+      batches.map(async (studentBatch) => {
+        return Promise.all(
+          studentBatch.map(async (student) => {
+            let results;
+
+            if (is_merged) {
+                let resultQuery = {}
+                if(section!="All"){
+                  resultQuery.section = query.section;  
+                }
+                if(shift!="All"){
+                  resultQuery.shift = query.shift;
+                }
+              // Parallel fetch of half yearly and annual results
+              const [halfYearlyResults, annualResults] = await Promise.all([
+                Result.find({
+                  session,
+                  term: "Half Yearly",
+                  className,
+                  studentId: student.studentId,
+                 ...resultQuery
+                }),
+                Result.find({
+                  session,
+                  term: "Annual",
+                  className,
+                  studentId: student.studentId,
+                  ...resultQuery
+                })
+              ]);
+              // console.log("halfYearlyResults", halfYearlyResults.length);
+              // console.log("annualResults", annualResults.length);
+
+              // Process both results in parallel
+              let halfYearlyProcessed, annualProcessed;
+              if(className=='4'||className=='5'){
+                [halfYearlyProcessed, annualProcessed] = await Promise.all([
+                  ResultForClass4To5(halfYearlyResults, resultGrading, subjectVsFullMarks),
+                  ResultForClass4To5(annualResults, resultGrading, subjectVsFullMarks)
+                ]);
+              }else{
+                [halfYearlyProcessed, annualProcessed] = await Promise.all([
+                  ResultForClass9AndAbove(halfYearlyResults, resultGrading, subjectVsFullMarks),
+                  ResultForClass9AndAbove(annualResults, resultGrading, subjectVsFullMarks)
+                ]);
+              }
+
+              results = calculateFinalMergedResult(halfYearlyProcessed, annualProcessed, resultGrading);
+            } else {
+              results = await Result.find({
+                session,
+                term,
+                className,
+                studentId: student.studentId,
+                section,
+                shift
+              });
+            }
+
+            // Process results to find failures
+            const failedSubjects = results.reduce((failures, result) => {
+              const { 
+                subject,
+                subjectName, 
+                subjective = 0, 
+                objective = 0, 
+                practical = 0, 
+                classAssignment = 0 
+              } = result;
+              // console.log("RESULT", result);
+
+              const isSubjectiveFail = subjective < 33;
+              let isCAFail = className !== "4" && className !== "5" && classAssignment < 10;
+              const totalMarks = subjective + objective + practical + classAssignment;
+
+              if (isSubjectiveFail || isCAFail) {
+                failures.push({
+                  subjectCode: className === "4" || className === "5" ? subject.substring(0, 4).toUpperCase() : subjectName.substring(0, 4).toUpperCase(),
+                  subjectName,
+                  subjective,
+                  objective,
+                  practical,
+                  ca: classAssignment,
+                  Total: totalMarks,
+                  fail: [
+                    ...(isSubjectiveFail ? ["subjective"] : []),
+                    ...(isCAFail ? ["classAssignment"] : [])
+                  ].join(", ")
+                });
+              }
+              return failures;
+            }, []);
+
+            // Only return failed students
+            return failedSubjects.length > 0 ? {
+              studentInfo: {
+                studentId: student.studentId,
+                class: student.class,
+                rollNo: student.roll,
+                studentName: student.studentName
+              },
+              subjects: failedSubjects
+            } : null;
+          })
+        );
+      })
+    );
+
+    // Flatten and filter out null results
+    const failList = batchResults
+      .flat()
+      .filter(result => result !== null)
+      .sort((a, b) => a.studentInfo.rollNo - b.studentInfo.rollNo);
+
+    const endTime = performance.now();
+    const executionTime = (endTime - startTime) / 1000; // Convert to seconds
+
+    res.status(200).json({
+      message: "Fail list generated successfully",
+      data: failList,
+      executionTime: `${executionTime.toFixed(2)} seconds`
     });
 
   } catch (error) {
