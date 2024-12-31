@@ -110,20 +110,28 @@ const updateResult = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
     const payload = req.body;
-    // console.log("payload", payload);
+     
     const updatedResult = await Result.findByIdAndUpdate(id, payload);
     res
       .status(200)
       .json({ message: "Result updated successfully", data: updatedResult });
   } catch (error) {
     res.status(500).json({ message: error.message });
+    
   }
 });
+
+
+
 //delete a single result
 const deleteResult = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedResult = await Result.findByIdAndDelete(id);
+    //delete result based on following query
+    //{shift: "Day", className: "5", term: "Half Yearly",session: "2024"}
+    const deletedResult = await Result.deleteMany({shift: "Day", className: "5", term: "Half Yearly",session: "2024"})
+   
+    // const deletedResult = await Result.findByIdAndDelete(id);
     res
       .status(200)
       .json({ message: "Result deleted successfully", data: deletedResult });
@@ -1706,31 +1714,40 @@ const getMeritListNewfunction = asyncHandler(async(req, res) => {
             let processedResults;
 
             if (is_merged) {
+              console.log("is_merged", is_merged);
               // Parallel fetch of half yearly and annual results
               const [halfYearlyResults, annualResults] = await Promise.all([
                 Result.find({
                   session,
                   term: "Half Yearly",
                   className,
-                  section,
-                  shift,
+                  ...query,
                   studentId: student.studentId,
                 }),
                 Result.find({
                   session,
                   term: "Annual",
                   className,
-                  section,
-                  shift,
+                  ...query,
                   studentId: student.studentId,
                 })
               ]);
+              console.log("halfYearlyResults", halfYearlyResults.length);
+              console.log("annualResults", annualResults.length);
 
               // Process results in parallel
-              const [halfYearlyProcessed, annualProcessed] = await Promise.all([
-                ResultForClass9AndAbove(halfYearlyResults, resultGrading, subjectVsFullMarks),
-                ResultForClass9AndAbove(annualResults, resultGrading, subjectVsFullMarks)
-              ]);
+              let halfYearlyProcessed, annualProcessed;
+              if(className=='4'||className=='5'){
+                [halfYearlyProcessed, annualProcessed] = await Promise.all([
+                  ResultForClass4To5(halfYearlyResults, resultGrading, subjectVsFullMarks),
+                  ResultForClass4To5(annualResults, resultGrading, subjectVsFullMarks)
+                ]);
+              }else{
+                [halfYearlyProcessed, annualProcessed] = await Promise.all([
+                  ResultForClass9AndAbove(halfYearlyResults, resultGrading, subjectVsFullMarks),
+                  ResultForClass9AndAbove(annualResults, resultGrading, subjectVsFullMarks)
+                ]);
+              }
 
               processedResults = calculateFinalMergedResult(
                 halfYearlyProcessed,
