@@ -35,12 +35,37 @@ const createResult = asyncHandler(async (req, res) => {
 
 const getAllResultData = asyncHandler(async (req, res) => {
   try {
+     const {session,term,className,section,shift,subjectName} = req.body;
+    
+    // Build match conditions dynamically
+    const matchConditions = {
+      session,
+      term,
+    };
+
+    // Only add section/shift filters if not "ALL"
+    if (section !== "All") {
+      matchConditions.section = section;
+    }
+    if (shift !== "All") {
+      matchConditions.shift = shift; 
+    }
+    if(className){
+      matchConditions.className = className;
+    }
+    if (subjectName) {
+      matchConditions.subjectName = subjectName;
+    }
+ console.log("matchConditions",matchConditions)
     const allResult = await Result.aggregate([
+      {
+        $match: matchConditions
+      },
       {
         $lookup: {
           from: "students",
-          localField: "studentId", 
-          foreignField: "studentId",
+          localField: "studentId",
+          foreignField: "studentId", 
           as: "studentInfo"
         }
       },
@@ -66,8 +91,12 @@ const getAllResultData = asyncHandler(async (req, res) => {
           roll: "$studentInfo.roll",
           studentName: "$studentInfo.studentName"
         }
+      },
+      {
+        $sort: { roll: 1 } // Add this stage to sort by roll number in ascending order
       }
     ]);
+    console.log("allResult", allResult.length);
     res.json({
       message: "successfully get all result",
       data: allResult,

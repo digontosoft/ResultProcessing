@@ -130,18 +130,99 @@ const resultDocs = {
       }
     },
     "/result/get_all": {
-      get: {
+      post: {
         tags: ["Result"],
-        summary: "Get all result",
-        description: "Get all result",
+        summary: "Get all result  for a class",
+        description: "Retrieve result for a specific class",
         security: [
           {
             "Bearer": []
           }
         ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  session: {
+                    type: "string",
+                    example: "2024"
+                  },
+                  term: {
+                    type: "string",
+                    example: "Annual"
+                  },
+                  className: {
+                    type: "string",
+                    example: "9"
+                  },
+                  section: {
+                    type: "string",
+                    example: "A"
+                  },
+                  shift: {
+                    type: "string",
+                    example: "Morning"
+                  },
+                  subjectName:{
+                    type: "string",
+                    example: "Science"
+                  }
+                },
+                required: ["session", "term", "className", "section", "shift",]
+              }
+            }
+          }
+        },
         responses: {
           200: {
-            description: "Result fetched successfully",
+            description: "Successful operation",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    studentInfo: {
+                      type: "object"
+                    },
+                    results: {
+                      type: "array",
+                      items: {
+                        type: "object"
+                      }
+                    },
+                    summary: {
+                      type: "object",
+                      properties: {
+                        totalMarks: {
+                          type: "number"
+                        },
+                        obtainedMarks: {
+                          type: "number"
+                        },
+                        studentsCount: {
+                          type: "number"
+                        },
+                        gpaWithout4th: {
+                          type: "number"
+                        },
+                        gpa: {
+                          type: "number"
+                        },
+                        remark: {
+                          type: "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          404: {
+            description: "Result not found",
             content: {
               "application/json": {
                 schema: {
@@ -149,7 +230,7 @@ const resultDocs = {
                   properties: {
                     message: {
                       type: "string",
-                      example: "Result fetched successfully"
+                      example: "Result not found"
                     }
                   }
                 }
