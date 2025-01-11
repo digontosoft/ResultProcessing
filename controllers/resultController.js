@@ -1008,14 +1008,14 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
                     className,
                     ...query,
                     studentId: student.studentId,
-                  }),
+                  }).sort({subjectName:1}),
                   Result.find({
                     session,
                     term: "Annual",
                     className,
                     ...query,
                     studentId: student.studentId,
-                  }),
+                  }).sort({subjectName:1}),
                   GetSubjectWiseHighestMarksAbove5(
                     session,
                     "Half Yearly",
@@ -1040,14 +1040,14 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
                     className,
                     ...query,
                     studentId: student.studentId,
-                  }),
+                  }).sort({subjectName:1}),
                   Result.find({
                     session,
                     term: "Annual",
                     className,
                     ...query,
                     studentId: student.studentId,
-                  }),
+                  }).sort({subjectName:1}),
                   GetSubjectWiseHighestMarks(
                     session,
                     "Half Yearly",
@@ -1114,7 +1114,7 @@ const getMarksheetNewfunction = asyncHandler(async (req, res) => {
                   className,
                   ...query,
                   studentId: student.studentId,
-                }),
+                }).sort({subjectName:1}),
                 GetSubjectWiseHighestMarks(session, term, className, section, shift),
                 GetSubjectWiseHighestMarksAbove5(session, term, className, section, shift)
               ]);
