@@ -43,6 +43,14 @@ const studentDocs = {
                         roll: {
                           type: "number",
                           example: 4
+                        },
+                        year: {
+                          type: "string",
+                          example: "2024"
+                        },
+                        group: {
+                          type: "string",
+                          example: "General"
                         }
                       }
                     }

@@ -228,14 +228,16 @@ const studentPromotion = asyncHandler(async (req, res) => {
     }
 
     const updatePromises = promotedStudent.map(async (student) => {
-      const { id, class: className, section, shift, roll } = student;
+      const { id, class: className, section, shift, roll,year,group } = student;
       return Student.findByIdAndUpdate(
         id,
         {
           class: className,
           section,
           shift, 
-          roll
+          roll,
+          year,
+          group
         },
         { new: true }
       );
