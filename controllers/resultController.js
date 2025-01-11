@@ -2093,7 +2093,6 @@ const getFailList = asyncHandler(async(req, res) => {
                 shift
               });
             }
-
             // Process results to find failures
             const failedSubjects = results.reduce((failures, result) => {
               const { 
@@ -2113,7 +2112,7 @@ const getFailList = asyncHandler(async(req, res) => {
               if (isSubjectiveFail || isCAFail) {
                 failures.push({
                   subjectCode: className === "4" || className === "5" ? subject.substring(0, 4).toUpperCase() : subjectName.substring(0, 4).toUpperCase(),
-                  subjectName,
+                  subjectName: className === "4" || className === "5" ? subject:subjectName,
                   subjective,
                   objective,
                   practical,
