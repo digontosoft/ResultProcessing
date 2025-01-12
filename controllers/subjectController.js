@@ -14,13 +14,13 @@ const createSubject = asyncHandler(async (req, res) => {
       isFourthSubject,
     } = req.body;
 
-    const existingSub = await Subject.findOne({ name, subjectCode });
+    // const existingSub = await Subject.findOne({ name, subjectCode });
 
-    if (existingSub) {
-      return res.status(400).json({
-        message: "Subject with the same name and code already exists",
-      });
-    }
+    // if (existingSub) {
+    //   return res.status(400).json({
+    //     message: "Subject with the same name and code already exists",
+    //   });
+    // }
 
     // const data = await Class.findOne({
     //   $or: [{ value: className }, { name: className }],
