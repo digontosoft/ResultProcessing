@@ -129,9 +129,9 @@ const deleteResult = asyncHandler(async (req, res) => {
     const { id } = req.params;
     //delete result based on following query
     //{shift: "Day", className: "5", term: "Half Yearly",session: "2024"}
-    const deletedResult = await Result.deleteMany({shift: "Day", className: "5", term: "Half Yearly",session: "2024"})
+    // const deletedResult = await Result.deleteMany({shift: "Day", className: "5", term: "Half Yearly",session: "2024"})
    
-    // const deletedResult = await Result.findByIdAndDelete(id);
+    const deletedResult = await Result.findByIdAndDelete(id);
     res
       .status(200)
       .json({ message: "Result deleted successfully", data: deletedResult });
