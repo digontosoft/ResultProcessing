@@ -28,6 +28,10 @@ const studentDocs = {
                           type: "string",
                           example: "676d86c520d17b6ce6deefdf"
                         },
+                        studentId: {
+                          type: "string",
+                          example: "502"
+                        },
                         class: {
                           type: "string",
                           example: "8"
